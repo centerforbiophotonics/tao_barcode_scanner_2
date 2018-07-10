@@ -18,9 +18,9 @@ class Badge extends Component {
     this.handleWorkshopChange = this.handleWorkshopChange.bind(this);
     this.handleSelectAttendee = this.handleSelectAttendee.bind(this);
     this.loadWorkshops = this.loadWorkshops.bind(this);
-    this.fetchAttendees = this.fetchAttendees.bind(this);
     this.generateBadge = this.generateBadge.bind(this);
     this.fetchAllAttendees = this.fetchAllAttendees.bind(this);
+    this.download = this.download.bind(true);
 
 		this.state = {
 			workshops: [],
@@ -57,7 +57,6 @@ class Badge extends Component {
         return prevState;
       });
     }
-    console.log(e.value);
   }
 
 
@@ -80,16 +79,6 @@ class Badge extends Component {
         )
   }
 
-
-	fetchAttendees() {
-    let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r});
-    let workshop_registrants_names = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.name});
-		console.log(workshop_registrants);
-    console.log(workshop_registrants_names);
-    console.log(this.state);
-    return workshop_registrants
-	}
-
   fetchAllAttendees() {
     let table = new Map();
     this.state.workshops.forEach(function(w) {
@@ -99,15 +88,12 @@ class Badge extends Component {
                                       return prevState;
                           });
           table[r.name]++;
-          console.log(w.registrants);
-          console.log(r);
         }
       }, this);
     }, this);
   }
 
   generateBadge() {
-      //convert_to_pdf(this.state.selected_registrant);
       fetch(this.props.url + "tao/generate_pdf", {
         method: 'post',
         body: JSON.stringify({attendee_id: this.state.selected_registrant.value, attendee_name: this.state.selected_registrant.label}), //send string ID instead of numerical ID for attendee_id
@@ -115,7 +101,21 @@ class Badge extends Component {
           'Content-Type' : 'application/json'
         }
       })
-      .then(console.log(this.state.selected_registrant))
+      .then(response => response.blob())
+      .then(response => this.download(response))
+  }
+
+  download(res) {
+    var blob = new Blob([res], { type: 'application/pdf' });
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = 'badge.pdf';
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    document.body.removeChild(link);
   }
 
 
@@ -130,7 +130,6 @@ class Badge extends Component {
     });
 
     let attendee_select_options = [];
-    console.log(this.state.attendee_list);
     if (this.state.data_loaded) {
       attendee_select_options = this.state.attendee_list.map(r =>{
       return (
@@ -147,7 +146,7 @@ class Badge extends Component {
       <Grid>
         <Row>
           <Col md={11}>
-            <h1>Generate Badge</h1>
+            <h1>Generate TAO Badge</h1>
           </Col>
         </Row>
         <Row>
