@@ -91,11 +91,18 @@ class Badge extends Component {
 	}
 
   fetchAllAttendees() {
+    let table = new Map();
     this.state.workshops.forEach(function(w) {
-      this.setState(prevState => {prevState.attendee_list.push(w.registrants);
-                                  return prevState;
-                      });
-      console.log(w.registrants);
+      w.registrants.forEach(function(r) {
+        if (table[r.name] != 0) { //if registrant has never been encoutered
+          this.setState(prevState => {prevState.attendee_list.push(r);
+                                      return prevState;
+                          });
+          table[r.name]++;
+          console.log(w.registrants);
+          console.log(r);
+        }
+      }, this);
     }, this);
   }
 
@@ -126,18 +133,14 @@ class Badge extends Component {
     console.log(this.state.attendee_list);
     if (this.state.data_loaded) {
       attendee_select_options = this.state.attendee_list.map(r =>{
-      console.log(r);
-      console.log(r[0].name);
-      console.log(r[0].id);
       return (
         {
-          label: r[0].name,
-          value: r[0].id
+          label: r.name,
+          value: r.id
         }
       )
     });
     }
-    console.log(this.state.attendee_select_options)
 
 
 		return(
