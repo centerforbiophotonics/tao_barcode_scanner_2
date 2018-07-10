@@ -1,0 +1,21 @@
+{
+  "name": "tao_experimental",
+  "private": true,
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.0-11",
+    "@fortawesome/free-solid-svg-icons": "^5.1.0-11",
+    "@fortawesome/react-fontawesome": "^0.1.0-11",
+    "@rails/webpacker": "3.5",
+    "babel-preset-react": "^6.24.1",
+    "bootstrap": "^4.1.1",
+    "prop-types": "^15.6.2",
+    "react": "^16.4.1",
+    "react-bootstrap": "^0.32.1",
+    "react-dom": "^16.4.1",
+    "react-select": "^1.2.1",
+    "webpacker-react": "^0.3.2"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "2.11.2"
+  }
+}
