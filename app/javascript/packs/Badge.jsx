@@ -144,26 +144,39 @@ class Badge extends Component {
 
 
 		return(
-      <div>
-        <h2>This page will generate a badge for you.</h2>
-        <Select 
-                      className="attendees"
-                      placeholder="Select an attendee." 
-                      options={attendee_select_options}
-                      value={this.state.selected_registrant}
-                      onChange={this.handleSelectAttendee}
-                      onClick={() => {this.setState(prevState => {
-                                        prevState.allow_select_attendee = true;
-                                        return prevState;
-                                      });}}
-                      clearable = {false}
-                />
-        {this.state.attendee_has_been_selected ?
-        <Button bsSize="large" onClick={this.generateBadge}>I think therefore I am a button</Button>
-        :
-        null
-        }
-      </div>
+      <Grid>
+        <Row>
+          <Col md={11}>
+            <h1>Generate Badge</h1>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={11}>
+            <h2>This page will generate a badge for you.</h2>
+          </Col>
+        </Row>
+        <Row>
+          <Col md={11}>
+            <Select 
+                          className="attendees"
+                          placeholder="Select an attendee." 
+                          options={attendee_select_options}
+                          value={this.state.selected_registrant}
+                          onChange={this.handleSelectAttendee}
+                          onClick={() => {this.setState(prevState => {
+                                            prevState.allow_select_attendee = true;
+                                            return prevState;
+                                          });}}
+                          clearable = {false}
+                    />
+            {this.state.attendee_has_been_selected ?
+            <Button bsSize="large" onClick={this.generateBadge}>I think therefore I am a button</Button>
+            :
+            null
+            }
+          </Col>
+        </Row>
+      </Grid>
       );
 	}
 
