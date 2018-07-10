@@ -25,10 +25,10 @@ class Badge extends Component {
 		this.state = {
 			workshops: [],
       attendee_list: [],
-      selected_workshop: null,
+      attendee_select_options: null,
       selected_registrant: null,
-      allow_select_attendee: false,
-      attendee_has_been_selected: false
+      attendee_has_been_selected: false,
+      data_loaded: null
 		};
 
 	}
@@ -92,11 +92,11 @@ class Badge extends Component {
 
   fetchAllAttendees() {
     this.state.workshops.forEach(function(w) {
-      this.setState(prevState => {prevState.attendee_list.push(w);
+      this.setState(prevState => {prevState.attendee_list.push(w.registrants);
                                   return prevState;
                       });
-      console.log(w);
-    });
+      console.log(w.registrants);
+    }, this);
   }
 
   generateBadge() {
@@ -123,41 +123,29 @@ class Badge extends Component {
     });
 
     let attendee_select_options = [];
-    if (this.state.allow_select_attendee) {
-      let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r});
-      attendee_select_options = workshop_registrants.map(r =>{
-      console.log(r.name);
-      console.log(r.id);
+    console.log(this.state.attendee_list);
+    if (this.state.data_loaded) {
+      attendee_select_options = this.state.attendee_list.map(r =>{
+      console.log(r);
+      console.log(r[0].name);
+      console.log(r[0].id);
       return (
         {
-          label: r.name,
-          value: r.id
+          label: r[0].name,
+          value: r[0].id
         }
       )
     });
     }
+    console.log(this.state.attendee_select_options)
 
 
 		return(
       <div>
         <h2>This page will generate a badge for you.</h2>
         <Select 
-                      className="workshops"
-                      placeholder="Select a Workshop" 
-                      options={workshop_select_options} 
-                      value={this.state.selected_workshop}
-                      onChange={this.handleWorkshopChange}
-                      onClick={() => {this.setState(prevState => {
-                                        prevState.allow_select_attendee = true;
-                                        console.log('I am running');
-                                        return prevState;
-                                      });}}
-                      clearable = {false}
-        />
-        {this.state.allow_select_attendee ?
-                <Select 
                       className="attendees"
-                      placeholder="Select an attendee" 
+                      placeholder="Select an attendee." 
                       options={attendee_select_options}
                       value={this.state.selected_registrant}
                       onChange={this.handleSelectAttendee}
@@ -167,9 +155,6 @@ class Badge extends Component {
                                       });}}
                       clearable = {false}
                 />
-                :
-                null
-        }
         {this.state.attendee_has_been_selected ?
         <Button bsSize="large" onClick={this.generateBadge}>I think therefore I am a button</Button>
         :
@@ -180,7 +165,7 @@ class Badge extends Component {
 	}
 
   componentDidMount(){
-    this.loadWorkshops(w => {});
+    this.loadWorkshops(this.fetchAllAttendees);
   }
 
 }
