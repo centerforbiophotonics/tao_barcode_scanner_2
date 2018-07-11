@@ -55,6 +55,7 @@ class App extends Component {
     if (e !== null) {
       this.setState(prevState => {
         prevState.selected_workshop = e.value;
+        prevState.current_message = "";
         return prevState;
       });
     }
