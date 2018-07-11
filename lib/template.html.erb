@@ -110,19 +110,19 @@
       <div class="name-zone">
         <div class="name-box">
           <p class="name-text">
-            ***
+            <%= @name %>
           </p>
-          @@@
+          <img src="<%= @path %>/temp_barcode.png" class="qr-code"></img>
         </div>
       </div>
 
       <div class="cee-logo">
-        <img src="CEElogo_web_no_sub.png" class="cee-logo-img"></img>
+        <img src="<%= @path %>/CEElogo_web_no_sub.png" class="cee-logo-img"></img>
       </div>
 
       <div class="border">
         <div class="unskew">
-          <img src="ucd_undergraduate_education_logo_white.png" class="ue-logo"></img>
+          <img src="<%= @path %>/ucd_undergraduate_education_logo_white.png" class="ue-logo"></img>
         </div>
       </div>
     </div>

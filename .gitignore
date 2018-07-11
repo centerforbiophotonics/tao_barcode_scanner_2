@@ -43,3 +43,4 @@ yarn-error\.log
 # Ignore all ActiveStorage files from development setups
 /storage/*
 
+lib/template2.html
