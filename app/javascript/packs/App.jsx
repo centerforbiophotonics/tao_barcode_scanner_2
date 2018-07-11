@@ -142,7 +142,7 @@ class App extends Component {
 
   checkScan(){
     let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
-    let attendee_id = parseInt(this.state.current_scan_val, 10);
+    let attendee_id = this.state.current_scan_val;
     console.log(attendee_id);
     console.log(workshop_registrants);
     if (workshop_registrants.includes(attendee_id)){
@@ -166,7 +166,7 @@ class App extends Component {
       this.loadWorkshops(workshops => {
         this.updateAttendance(workshops, () => {
           let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
-          let attendee_id = parseInt(this.state.current_scan_val, 10);
+          let attendee_id = this.state.current_scan_val;
           if (workshop_registrants.includes(attendee_id)){
             this.postAttend(this.state.selected_workshop, attendee_id);  
           } else {
@@ -380,13 +380,13 @@ class App extends Component {
             <Col md={2}>
             <div>
               {this.state.error !== null ?
-                <Button bsSize="medium" onClick={this.sync} disabled>
+                <Button bsSize="large" onClick={this.sync} disabled>
                 <FontAwesomeIcon icon="wifi" style={{color:"red"}} />
                 </Button>
                 :
                 null
               }
-                <Button bsSize="medium"  onClick={this.downloadCSV} disabled={this.state.tamper_lock ? true : false}>
+                <Button bsSize="large"  onClick={this.downloadCSV} disabled={this.state.tamper_lock ? true : false}>
                   {this.state.error == null ? 
                   <FontAwesomeIcon icon="save"/>
                   : 
