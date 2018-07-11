@@ -7,11 +7,11 @@ import 'react-select/dist/react-select.css';
 import { FormControl, Grid, Row, Col, Button } from 'react-bootstrap';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave} from '@fortawesome/free-solid-svg-icons'
+import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import 'bootstrap/dist/css/bootstrap'
 
-library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave)
+library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge)
 
 
 class App extends Component {
@@ -389,9 +389,16 @@ class App extends Component {
               }
                 <Button bsSize="large"  onClick={this.downloadCSV} disabled={this.state.tamper_lock ? true : false}>
                   {this.state.error == null ? 
-                  <FontAwesomeIcon icon="save"/>
+                  <FontAwesomeIcon icon="save" style={{color:"black"}}/>
                   : 
                   <FontAwesomeIcon icon="save" style={{color:"red"}}/>
+                  }
+                </Button>
+                <Button href="tao/print" bsSize="large" disabled={this.state.tamper_lock ? true : false}>
+                  {this.state.error == null ? 
+                  <FontAwesomeIcon icon="id-badge" style={{color:"black"}}/>
+                  : 
+                  <FontAwesomeIcon icon="id-badge" style={{color:"red"}}/>
                   }
                 </Button>
               </div>
