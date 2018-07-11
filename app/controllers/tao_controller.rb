@@ -32,7 +32,7 @@ class TaoController < ApplicationController
   end
 
   def generate_pdf
-  	send_data generate_registrants(params[:attendee_id], params[:attendee_name]), :disposition => "attachment; filename=badge.pdf"
+  	send_data generate_registrants(params[:attendee_id], params[:attendee_name]), :disposition => "attachment"
   end
 
   private
