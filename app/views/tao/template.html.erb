@@ -1,0 +1,130 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>TAO Badge Template</title>
+  <meta name="description" content="Template">
+  <meta name="author" content="Matthew Steinwachs">
+  
+</head>
+
+<body>
+    <style>
+      html, body{
+        width: 4in;
+        height: 3in;
+        margin: 0in;
+      }
+
+      .border{
+        background-color: #d1a11f;
+        -webkit-transform:skew(0deg, 3deg);
+        width:100%;
+        height:1in;
+        margin-top:-0.4in;
+      }
+
+      .name-zone{
+        background-color: #12356c;
+        width:100%;
+        height:1.5in;
+        margin-top:-0.4in;
+        position:relative;
+        z-index: -1;
+      }
+
+      .cee-logo{
+        background-color: white;
+        width:100%;
+        height:1in;
+      }
+
+      .clip-mask{
+        height: 3in;
+        width: 4in;
+        overflow: hidden;
+      }
+
+      .unskew{
+        -webkit-transform:skew(0deg, -3deg);
+      }
+
+      .ue-logo{
+        height:0.4in;
+        margin-left: 0.1in;
+        margin-top: 0.1in;
+      }
+
+      .cee-logo-img{
+        width: 1.5in;
+        float: right;
+        margin-right: 0.01in;
+        margin-top: 0.07in;
+      }
+
+      .tao-title{
+        font-size: 0.25in;
+        font-weight: bold;
+        color: white;
+        position: absolute;
+        top: 0.28in;
+        left: 0.67in;
+        font-family: sans-serif;
+      }
+
+      .name-box{
+        position:absolute;
+        top:38%;
+        left: 10%;
+        background-color: white;
+        width: 80%;
+      }
+
+      .name-text{
+        color: black;
+        font-family: sans-serif;
+        font-size:0.2in;
+        margin-left:0.2in;
+        line-height: 0.4in;
+        float:left;
+      }
+
+      .qr-code{
+        float:right;
+        height: 0.8in;
+        width: 1in;
+      }
+    </style>
+    <div class="clip-mask">
+      <div class="border">
+        <div class="unskew">
+          <p class="tao-title">
+            2018 TA ORIENTATION
+          </p>
+        </div>
+      </div>
+
+
+      <div class="name-zone">
+        <div class="name-box">
+          <p class="name-text">
+            ***
+          </p>
+        </div>
+      </div>
+
+      <div class="cee-logo">
+        <img src="/Users/work/Documents/'Work Projects'/New_BSS/tao_experimental/lib/CEElogo_web_no_sub.png" class="cee-logo-img"></img>
+      </div>
+
+      <div class="border">
+        <div class="unskew">
+          <img src="./ucd_undergraduate_education_logo_white.png" class="ue-logo"></img>
+        </div>
+      </div>
+    </div>
+
+</body>
+</html>
