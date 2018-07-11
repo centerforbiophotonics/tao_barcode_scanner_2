@@ -102,14 +102,14 @@ class Badge extends Component {
         }
       })
       .then(response => response.blob())
-      .then(response => this.download(response))
+      .then(response => this.download(response, this.state.selected_registrant.label))
   }
 
-  download(res) {
+  download(res, name) {
     var blob = new Blob([res], { type: 'application/pdf' });
     var link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.download = 'badge.pdf';
+    link.download = name + ".pdf";
 
     document.body.appendChild(link);
 
@@ -151,11 +151,6 @@ class Badge extends Component {
         </Row>
         <Row>
           <Col md={11}>
-            <h2>This page will generate a badge for you.</h2>
-          </Col>
-        </Row>
-        <Row>
-          <Col md={11}>
             <Select 
                           className="attendees"
                           placeholder="Select an attendee." 
@@ -169,7 +164,10 @@ class Badge extends Component {
                           clearable = {false}
                     />
             {this.state.attendee_has_been_selected ?
-            <Button bsSize="large" onClick={this.generateBadge}>I think therefore I am a button</Button>
+            <div>
+            <br/>
+              <Button bsSize="large" onClick={this.generateBadge}>Generate Badge</Button>
+            </div>
             :
             null
             }
