@@ -381,7 +381,7 @@ class App extends Component {
             <Col md={2}>
             <div>
               {this.state.error !== null ?
-                <Button bsSize="large" onClick={this.sync} disabled>
+                <Button bsSize="large" onClick={this.sync}>
                 <FontAwesomeIcon icon="wifi" style={{color:"red"}} />
                 </Button>
                 :
