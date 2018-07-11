@@ -5,10 +5,11 @@ import 'react-select/dist/react-select.css';
 import { FormControl, Grid, Row, Col, Button } from 'react-bootstrap';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave} from '@fortawesome/free-solid-svg-icons';
+import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faArrowLeft} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import 'bootstrap/dist/css/bootstrap';
 
-library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave);
+library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faArrowLeft);
 
 class Badge extends Component {
 	constructor(props) {
@@ -146,7 +147,14 @@ class Badge extends Component {
       <Grid>
         <Row>
           <Col md={11}>
-            <h1>Generate TAO Badge</h1>
+          <div>
+            <span style={{float:'left'}}><h1>Generate TAO Badge</h1></span>
+            <span style={{float:'right'}}>
+            <Button href="/" bsSize="large">
+                 <FontAwesomeIcon icon="arrow-left" size="lg" style={{color:"black"}}/>
+            </Button>
+            </span>
+          </div>
           </Col>
         </Row>
         <Row>
