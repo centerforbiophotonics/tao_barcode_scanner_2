@@ -1,0 +1,45 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>TAO Badge Template</title>
+  <meta name="description" content="Template">
+  <meta name="author" content="Matthew Steinwachs">
+
+  <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    /* Create two equal columns that floats next to each other */
+    .column {
+        float: left;
+        width: 50%;
+        padding: 2px;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    h2 {
+      font-family: Helvetica;
+    }
+  </style>
+  
+</head>
+<body>
+<% @set.each do |n, png| %>
+  <div class="column">
+    <h2><%= n %>:</h2>
+    <img src="<%= png %>" />
+  </div>
+<% end %>
+
+</body>
+</html>
