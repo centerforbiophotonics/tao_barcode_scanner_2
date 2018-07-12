@@ -36,6 +36,7 @@ class App extends Component {
     this.state = {
       workshops: [],
       data_loaded: false,
+      cache_dirty: false,
       selected_workshop: null,
       attendance: {},
       check_in: false, //mode
@@ -78,14 +79,24 @@ class App extends Component {
               let name = prevState.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})["name"]
               prevState.current_scan_val = "";
               prevState.error = null;
+              prevState.workshops.forEach(w => {w.registrants.forEach((r) => {
+                let attendance_record = prevState.attendance[w.id + "-" + r.id]
+                  if (r.attended == false && attendance_record.checked_in && attendance_record.checked_out) {
+                  prevState.cache_dirty = false;
+                  }
+                })
+              })
               prevState.current_message = "Thanks for coming "+name;
               prevState.current_message_color = "green";
               return prevState;
             });
           },
           (error) => {
+            let name = this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})["name"]
             this.setState({
-              error:error
+              error:error,
+              current_message: "Thanks for coming "+name,
+              urrent_message_color: "green"
             });
           }
         )
@@ -144,8 +155,6 @@ class App extends Component {
   checkScan(){
     let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
     let attendee_id = this.state.current_scan_val;
-    console.log(attendee_id);
-    console.log(workshop_registrants);
     if (workshop_registrants.includes(attendee_id)){
       let key = this.state.selected_workshop + "-" + attendee_id;
       this.setState(prevState => {   
@@ -158,6 +167,7 @@ class App extends Component {
         prevState.current_scan_val = "";
         return prevState;
       }, () => {
+        this.cache();
         if (this.state.attendance[key].checked_out == true && this.state.attendance[key].checked_in == true) {
           this.postAttend(this.state.selected_workshop, attendee_id); 
         }
@@ -288,7 +298,16 @@ class App extends Component {
   }
 
   cache() {
-    localStorage.setItem('check_out_cache', JSON.stringify(this.state.attendance));
+    let cache_data = localStorage.getItem("check_out_cache");
+    //console.log(this.state.attendance);
+    if (JSON.stringify(this.state.attendance) != cache_data) {
+      //console.log("hello!");
+      localStorage.setItem('check_out_cache', JSON.stringify(this.state.attendance));
+      this.setState(prevState => {       
+        prevState.cache_dirty = true;
+        return prevState;
+      });
+    }
   }
 
   render() {
@@ -381,25 +400,21 @@ class App extends Component {
             <Col md={2}>
             <div>
               {this.state.error !== null ?
-                <Button bsSize="large" onClick={this.sync}>
-                <FontAwesomeIcon icon="wifi" style={{color:"red"}} />
+                <Button bsSize="large" onClick={this.sync} disabled={this.state.cache_dirty ? false : true}>
+                <FontAwesomeIcon icon="wifi" style={this.state.cache_dirty ? {color:"red"} : {color:"black"}} />
                 </Button>
                 :
                 null
               }
                 <Button bsSize="large"  onClick={this.downloadCSV} disabled={this.state.tamper_lock ? true : false}>
-                  {this.state.error == null ? 
-                  <FontAwesomeIcon icon="save" style={{color:"black"}}/>
-                  : 
+                  {this.state.error !== null && this.state.cache_dirty ? 
                   <FontAwesomeIcon icon="save" style={{color:"red"}}/>
+                  : 
+                  <FontAwesomeIcon icon="save" style={{color:"black"}}/>
                   }
                 </Button>
                 <Button href="tao/print" bsSize="large" disabled={this.state.tamper_lock ? true : false}>
-                  {this.state.error == null ? 
                   <FontAwesomeIcon icon="id-badge" style={{color:"black"}}/>
-                  : 
-                  <FontAwesomeIcon icon="id-badge" style={{color:"red"}}/>
-                  }
                 </Button>
               </div>
             </Col>
@@ -423,11 +438,11 @@ class App extends Component {
     }
     else {
       this.loadWorkshops(this.updateAttendance)
+      //localStorage.setItem('check_out_cache', JSON.stringify(this.state.attendance));
     }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    this.cache();
     return true;
   }
 
