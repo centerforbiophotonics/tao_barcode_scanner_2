@@ -252,6 +252,7 @@ class App extends Component {
           && this.state.attendance[key].checked_out == true 
           && this.state.attendance[key].checked_in == true) {
             names.push(this.findAttendee(key.split("-")[0], key.split("-")[1]).name);
+            names.push('\n'); //add line breaks to array used to display names in the attendance list
         }
       }
       return names;
@@ -388,9 +389,9 @@ class App extends Component {
                 </div>
                 :
                 <div>
-                <div>
+                <div className="display-linebreak">
                   <h2>Attendance List:</h2>
-                  <p>{this.checkedInNames()}</p>
+                  {this.checkedInNames()}
                 </div>
               </div>
 
@@ -438,7 +439,6 @@ class App extends Component {
     }
     else {
       this.loadWorkshops(this.updateAttendance)
-      //localStorage.setItem('check_out_cache', JSON.stringify(this.state.attendance));
     }
   }
 

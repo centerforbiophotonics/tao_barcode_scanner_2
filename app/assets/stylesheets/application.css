@@ -13,3 +13,7 @@
  *= require_tree .
  *= require_self
  */
+
+ .display-linebreak { 
+  white-space: pre-line; /*Used in App.jsx for displaying \n linebreaks in the attendance list*/
+}
