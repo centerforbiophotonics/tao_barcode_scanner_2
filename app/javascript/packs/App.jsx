@@ -72,7 +72,14 @@ class App extends Component {
         headers: {
           'Content-Type' : 'application/json'
         }
-      }).then(res => res.json())
+      }).then(res => {
+          if (res.ok) {
+            return res.json();
+          }
+          else {
+            throw new Error('something went wrong!')
+          }
+        })
         .then(
           (result) => {
             this.setState(prevState => {
@@ -122,75 +129,79 @@ class App extends Component {
   }
 
   updateAttendance(workshops, handler) {
-    workshops.forEach(w => {
-      w.registrants.forEach(r => {
-        let key = w.id + "-" + r.id;
-        if (key in this.state.attendance) {
-          if (r.attended) {
+    if (workshops != null) {
+      workshops.forEach(w => {
+        w.registrants.forEach(r => {
+          let key = w.id + "-" + r.id;
+          if (key in this.state.attendance) {
+            if (r.attended) {
+              this.setState(prevState => {
+                prevState.attendance[key].checked_in = true;
+                prevState.attendance[key].checked_out = true;
+                return prevState
+              }, handler);
+            }
+            else {
+              if (handler) {
+                handler();
+              }
+            }
+          }
+          else {
             this.setState(prevState => {
-              prevState.attendance[key].checked_in = true;
-              prevState.attendance[key].checked_out = true;
+              prevState.attendance[key] = {
+                checked_in : true,
+                checked_out : r.attended
+              };
               return prevState
             }, handler);
           }
-          else {
-            if (handler) {
-              handler();
-            }
-          }
-        }
-        else {
-          this.setState(prevState => {
-            prevState.attendance[key] = {
-              checked_in : true,
-              checked_out : r.attended
-            };
-            return prevState
-          }, handler);
-        }
+        })
       })
-    }) 
+    } 
   }
 
   checkScan(){
-    let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
-    let attendee_id = this.state.current_scan_val;
-    if (workshop_registrants.includes(attendee_id)){
-      let key = this.state.selected_workshop + "-" + attendee_id;
-      this.setState(prevState => {   
-        if (prevState.check_in) {
-          prevState.attendance[key].checked_in = true;
-        }
-        else {
-          prevState.attendance[key].checked_out = true;
-        }
-        prevState.current_scan_val = "";
-        return prevState;
-      }, () => {
-        this.cache();
-        if (this.state.attendance[key].checked_out == true && this.state.attendance[key].checked_in == true) {
-          this.postAttend(this.state.selected_workshop, attendee_id); 
-        }
-      });
-    } else {
-      // Refresh workshop data in case attendee was just registered
-      this.loadWorkshops(workshops => {
-        this.updateAttendance(workshops, () => {
-          let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
-          let attendee_id = this.state.current_scan_val;
-          if (workshop_registrants.includes(attendee_id)){
-            this.postAttend(this.state.selected_workshop, attendee_id);  
-          } else {
-            this.setState(
-              {
-                current_scan_val: "", 
-                current_message:"You aren't registered for this workshop.", 
-                current_message_color:"red"
-              }
-            );
-         }
-       });
-      });
+    if (this.state.workshops != null) {
+      let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
+      let attendee_id = this.state.current_scan_val;
+      if (workshop_registrants.includes(attendee_id)){
+        let key = this.state.selected_workshop + "-" + attendee_id;
+        this.setState(prevState => {   
+          if (prevState.check_in) {
+            prevState.attendance[key].checked_in = true;
+          }
+          else {
+            prevState.attendance[key].checked_out = true;
+          }
+          prevState.current_scan_val = "";
+          return prevState;
+        }, () => {
+          this.cache();
+          if (this.state.attendance[key].checked_out == true && this.state.attendance[key].checked_in == true) {
+            this.postAttend(this.state.selected_workshop, attendee_id); 
+          }
+        });
+      } else {
+        // Refresh workshop data in case attendee was just registered
+        this.loadWorkshops(workshops => {
+          this.updateAttendance(workshops, () => {
+            let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
+            let attendee_id = this.state.current_scan_val;
+            if (workshop_registrants.includes(attendee_id)){
+              this.postAttend(this.state.selected_workshop, attendee_id);  
+            } else {
+              this.setState(
+                {
+                  current_scan_val: "", 
+                  current_message:"You aren't registered for this workshop.", 
+                  current_message_color:"red"
+                }
+              );
+           }
+         });
+        });
+      }
     }
   }
 
@@ -326,7 +337,7 @@ class App extends Component {
       );
     }
 
-    if (this.state.data_loaded){
+    if (this.state.data_loaded && this.state.workshops != null){
       let workshop_select_options = this.state.workshops.map(w =>{
         return (
           {
@@ -425,7 +436,10 @@ class App extends Component {
       );
     } else {
       return (
-        <h1> Loading </h1>
+        <div>
+          <h1> Loading... </h1>
+          <h2>(potential connection error, please refresh the page)</h2>
+        </div>
       );
     }
     
