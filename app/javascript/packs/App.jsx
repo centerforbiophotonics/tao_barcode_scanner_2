@@ -63,7 +63,7 @@ class App extends Component {
   }
 
   postAttend(workshop_id, attendee_id){
-    console.log(this.props.url)
+    console.log(this.props.url);
     console.log(JSON.stringify({workshop_id: workshop_id, attendee_id:attendee_id}));
 
     fetch(this.props.url + "tao/attend", {
@@ -84,21 +84,27 @@ class App extends Component {
           (result) => {
             this.setState(prevState => {
               let name = prevState.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})["name"]
+              //let mismatch = false;
               prevState.current_scan_val = "";
               prevState.error = null;
               prevState.workshops.forEach(w => {w.registrants.forEach((r) => {
                 let attendance_record = prevState.attendance[w.id + "-" + r.id]
                   if (r.attended == false && attendance_record.checked_in && attendance_record.checked_out) {
-                  prevState.cache_dirty = false;
+                    //mismatch = true;
+                    prevState.cache_dirty = false;
                   }
                 })
               })
+              //if (mismatch == false) {
+                //prevState.cache_dirty = false;
+              //}
               prevState.current_message = "Thanks for coming "+name;
               prevState.current_message_color = "green";
               return prevState;
             });
           },
           (error) => {
+            console.log(error);
             let name = this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})["name"]
             this.setState({
               error:error,
@@ -114,11 +120,12 @@ class App extends Component {
         .then(res => res.json())
         .then(
           (result) => {
+            if (result != null) {
             this.setState({
               data_loaded: true,
               workshops: result,
               error: null
-            }, () => {handler(result)});
+            }, () => {handler(result)});}
           },
           (error) => {
             this.setState({
@@ -179,13 +186,16 @@ class App extends Component {
         }, () => {
           this.cache();
           if (this.state.attendance[key].checked_out == true && this.state.attendance[key].checked_in == true) {
-            this.postAttend(this.state.selected_workshop, attendee_id); 
+            //this.postAttend(this.state.selected_workshop, attendee_id); 
+            this.sync();
           }
         });
       } else {
         // Refresh workshop data in case attendee was just registered
+        console.log("Jello world!");
         this.loadWorkshops(workshops => {
           this.updateAttendance(workshops, () => {
+            if (this.state.workshops != null) {
             let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
             let attendee_id = this.state.current_scan_val;
             if (workshop_registrants.includes(attendee_id)){
@@ -199,6 +209,7 @@ class App extends Component {
                 }
               );
            }
+         }
          });
         });
       }
@@ -411,7 +422,7 @@ class App extends Component {
             </Col>
             <Col md={2}>
             <div>
-              {this.state.error !== null ?
+              {this.state.cache_dirty ?
                 <Button bsSize="large" onClick={this.sync} disabled={this.state.cache_dirty ? false : true}>
                 <FontAwesomeIcon icon="wifi" style={this.state.cache_dirty ? {color:"red"} : {color:"black"}} />
                 </Button>
@@ -419,7 +430,7 @@ class App extends Component {
                 null
               }
                 <Button bsSize="large"  onClick={this.downloadCSV} disabled={this.state.tamper_lock ? true : false}>
-                  {this.state.error !== null && this.state.cache_dirty ? 
+                  {this.state.cache_dirty && this.state.error !== null   ? 
                   <FontAwesomeIcon icon="save" style={{color:"red"}}/>
                   : 
                   <FontAwesomeIcon icon="save" style={{color:"black"}}/>
