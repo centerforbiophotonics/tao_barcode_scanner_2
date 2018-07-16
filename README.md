@@ -1,26 +1,27 @@
-# README
+# TAO Barcode Scanner
 
 ![flow chart](diagram.png?raw=true)
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This project provides front end client designed to handle the tracking of attendance at events by means of barcode scans. It both serves a react.js app to the browser, and also acts as an intermediary between the client and a remote server that is intended to have access to any needed data.
 
-Things you may want to cover:
+Dependancies:
 
-* Ruby version
+* Ruby 2.4.1
 
-* System dependencies
+* Rails 5.2.0
 
-* Configuration
+* Yarn
 
-* Database creation
+* Webpacker
 
-* Database initialization
+* httparty (gem)
 
-* How to run the test suite
+* barby (gem)
 
-* Services (job queues, cache servers, search engines, etc.)
+* chunky_png (gem)
 
-* Deployment instructions
+* pdfkit (gem)
 
-* ...
+* A modern web browser (recommendations: Chrome, Safari, or Firefox)
+
+Deployment instructions:
