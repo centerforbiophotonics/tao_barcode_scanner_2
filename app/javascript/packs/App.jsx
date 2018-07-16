@@ -39,6 +39,7 @@ class App extends Component {
       cache_dirty: false,
       selected_workshop: null,
       attendance: {},
+      last_checked_name: "",
       check_in: false, //mode
       current_scan_val: "",
       tamper_lock: false,
@@ -98,17 +99,16 @@ class App extends Component {
               //if (mismatch == false) {
                 //prevState.cache_dirty = false;
               //}
-              prevState.current_message = "Thanks for coming "+name;
+              prevState.current_message = "Thanks for coming "+this.state.last_checked_name;
               prevState.current_message_color = "green";
               return prevState;
             });
           },
           (error) => {
-            console.log(error);
             let name = this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})["name"]
             this.setState({
               error:error,
-              current_message: "Thanks for coming "+name,
+              current_message: "Thanks for coming "+this.state.last_checked_name,
               urrent_message_color: "green"
             });
           }
@@ -172,6 +172,10 @@ class App extends Component {
     if (this.state.workshops != null) {
       let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
       let attendee_id = this.state.current_scan_val;
+      let name = this.state.workshops.find(w => {return w.id == this.state.selected_workshop}).registrants.find(r => {return r.id == attendee_id})["name"]
+      this.setState({
+          last_checked_name: name
+      });
       if (workshop_registrants.includes(attendee_id)){
         let key = this.state.selected_workshop + "-" + attendee_id;
         this.setState(prevState => {   
@@ -192,7 +196,6 @@ class App extends Component {
         });
       } else {
         // Refresh workshop data in case attendee was just registered
-        console.log("Jello world!");
         this.loadWorkshops(workshops => {
           this.updateAttendance(workshops, () => {
             if (this.state.workshops != null) {
@@ -296,7 +299,6 @@ class App extends Component {
   }
 
   downloadCSV() { //https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
-    //let rows = [["hello", "random", "book"], ["javascript", "type", "sublime"]];
     let rows = [];
     let i = 0;
     rows[i++] = ["Workshop ID", "Attendee ID", "Attended"];
