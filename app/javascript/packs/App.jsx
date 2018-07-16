@@ -172,12 +172,12 @@ class App extends Component {
     if (this.state.workshops != null) {
       let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
       let attendee_id = this.state.current_scan_val;
-      let name = this.state.workshops.find(w => {return w.id == this.state.selected_workshop}).registrants.find(r => {return r.id == attendee_id})["name"]
-      this.setState({
-          last_checked_name: name
-      });
       if (workshop_registrants.includes(attendee_id)){
         let key = this.state.selected_workshop + "-" + attendee_id;
+        let name = this.state.workshops.find(w => {return w.id == this.state.selected_workshop}).registrants.find(r => {return r.id == attendee_id})["name"]
+        this.setState({
+            last_checked_name: name
+        });
         this.setState(prevState => {   
           if (prevState.check_in) {
             prevState.attendance[key].checked_in = true;
@@ -190,7 +190,7 @@ class App extends Component {
         }, () => {
           this.cache();
           if (this.state.attendance[key].checked_out == true && this.state.attendance[key].checked_in == true) {
-            //this.postAttend(this.state.selected_workshop, attendee_id); 
+            this.postAttend(this.state.selected_workshop, attendee_id); 
             this.sync();
           }
         });
