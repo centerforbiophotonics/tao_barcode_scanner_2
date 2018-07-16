@@ -2,7 +2,7 @@
 
 ![flow chart](diagram.png?raw=true)
 
-TAO Barcode Scanner is a project that provides a react.js front end client designed to handle the tracking of attendance at events by means of barcode scans. It both serves a react.js app to the browser, and also acts as an intermediary between the client and a secondary server by making the appropriate API calls to fetch the data it needs.
+TAO Barcode Scanner is a project that provides a react.js front end client designed to handle the tracking of attendance at events by means of barcode scans. It both serves a react.js app to the browser, and also acts as an intermediary between said client and a secondary server by making the appropriate API calls to fetch required data.
 
 Dependancies:
 
