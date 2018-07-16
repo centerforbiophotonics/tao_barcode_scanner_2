@@ -24,11 +24,11 @@ Dependancies:
 
 * pdfkit (gem)
 
-* A modern web browser (recommendations: Chrome, Safari, or Firefox)
+* A modern web browser (recommendations: Chrome, Firefox, or Safari )
 
 Installation instructions:
 
-* Install the required Ruby version (RVM) recommended
+* Install the required Ruby version (RVM recommended)
 * Install Rails and the required gems.
 * Install Yarn and the required packages.
-* Run Rails from the root of the project directory.
+* Run `rails s` from the root of the project directory.
