@@ -85,22 +85,18 @@ class App extends Component {
           (result) => {
             this.setState(prevState => {
               let name = prevState.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})["name"]
-              //let mismatch = false;
+              let current_r = this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})
               prevState.current_scan_val = "";
               prevState.error = null;
+              prevState.cache_dirty = false;
+              current_r.attended = true;
               prevState.workshops.forEach(w => {w.registrants.forEach((r) => {
                 let attendance_record = prevState.attendance[w.id + "-" + r.id]
                   if (r.attended == false && attendance_record.checked_in && attendance_record.checked_out) {
-                    //mismatch = true;
-                    prevState.cache_dirty = false;
+                    prevState.cache_dirty = true;
                   }
                 })
               })
-              //if (mismatch == false) {
-                //prevState.cache_dirty = false;
-              //}
-              prevState.current_message = "Thanks for coming "+this.state.last_checked_name;
-              prevState.current_message_color = "green";
               return prevState;
             });
           },
@@ -190,7 +186,24 @@ class App extends Component {
         }, () => {
           this.cache();
           if (this.state.attendance[key].checked_out == true && this.state.attendance[key].checked_in == true) {
-            this.postAttend(this.state.selected_workshop, attendee_id); 
+            let r = this.state.workshops.find(w => {return w.id == this.state.selected_workshop}).registrants.find(r => {return r.id == attendee_id});
+            if (r.attended) {
+              this.setState(
+                {
+                  current_message:this.state.last_checked_name+", you are already checked in.",
+                  current_message_color:"orange"
+                }
+              );
+            }
+            else {
+              this.setState(
+                {
+                  current_message:"Thanks for coming "+this.state.last_checked_name,
+                  current_message_color:"green"
+                }
+              );
+            }
+
             this.sync();
           }
         });
