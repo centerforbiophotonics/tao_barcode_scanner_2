@@ -29,6 +29,6 @@ Dependencies:
 Installation instructions:
 
 * Install the required Ruby version (RVM recommended)
-* Install Rails and the required gems.
-* Install Yarn and the required packages.
+* Install Rails and the required gems (`bundle install`).
+* Install Yarn and the required packages (`yarn install`).
 * Run `rails s` from the root of the project directory.
