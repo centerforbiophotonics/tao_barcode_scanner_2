@@ -6,7 +6,7 @@ TAO Barcode Scanner is a project that provides a react.js front end client desig
 
 It is also capable of generating badges with the required barcodes in real-time.
 
-Dependancies:
+Dependencies:
 
 * Ruby 2.4.1
 
@@ -29,6 +29,6 @@ Dependancies:
 Installation instructions:
 
 * Install the required Ruby version (RVM recommended)
-* Install Rails and the required gems.
-* Install Yarn and the required packages.
+* Install Rails and the required gems (`bundle install`).
+* Install Yarn and the required packages (`yarn install`).
 * Run `rails s` from the root of the project directory.
