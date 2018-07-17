@@ -6,7 +6,7 @@ TAO Barcode Scanner is a project that provides a react.js front end client desig
 
 It is also capable of generating badges with the required barcodes in real-time.
 
-Dependancies:
+Dependencies:
 
 * Ruby 2.4.1
 
