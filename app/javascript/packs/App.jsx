@@ -337,9 +337,7 @@ class App extends Component {
 
   cache() {
     let cache_data = localStorage.getItem("check_out_cache");
-    //console.log(this.state.attendance);
     if (JSON.stringify(this.state.attendance) != cache_data) {
-      //console.log("hello!");
       localStorage.setItem('check_out_cache', JSON.stringify(this.state.attendance));
       this.setState(prevState => {       
         prevState.cache_dirty = true;
@@ -471,7 +469,6 @@ class App extends Component {
     
   }
 
-  ///selected_workshop_checked_in[selected_workshop_checked_in.length-1]
   componentDidMount(){
     let cache_data = JSON.parse(localStorage.getItem("check_out_cache"));
     if (cache_data != null) {
