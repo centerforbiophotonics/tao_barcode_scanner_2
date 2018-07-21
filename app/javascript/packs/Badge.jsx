@@ -26,9 +26,12 @@ class Badge extends Component {
 		this.state = {
 			workshops: [],
       attendee_list: [],
+      selected_workshop_attendee_list: [],
       attendee_select_options: null,
       selected_registrant: null,
+      allow_print_all: false,
       attendee_has_been_selected: false,
+      workshop_has_been_selected: false,
       data_loaded: null
 		};
 
@@ -36,14 +39,24 @@ class Badge extends Component {
 
   handleWorkshopChange(e){
     if (e !== null) {
+      let w = this.state.workshops.find(function (w) { return w.id === e.value; });
       this.setState(prevState => {
         prevState.selected_workshop = e.value;
         return prevState;
       });
       this.setState(prevState => {
         prevState.allow_select_attendee = true;
+        prevState.workshop_has_been_selected = true;
         return prevState;
       });
+      this.setState({
+          selected_workshop_attendee_list: []
+          });
+      w.registrants.forEach(function(r) {
+        this.setState(prevState => {prevState.selected_workshop_attendee_list.push(r);
+                                    return prevState;
+          });
+        }, this);
     }
   }
 
@@ -132,7 +145,7 @@ class Badge extends Component {
 
     let attendee_select_options = [];
     if (this.state.data_loaded) {
-      attendee_select_options = this.state.attendee_list.map(r =>{
+      attendee_select_options = this.state.selected_workshop_attendee_list.map(r =>{
       return (
         {
           label: r.name,
@@ -146,7 +159,7 @@ class Badge extends Component {
 		return(
       <Grid>
         <Row>
-          <Col md={11}>
+          <Col md={10}>
           <div>
             <span style={{float:'left'}}><h1>Generate TAO Badge</h1></span>
             <span style={{float:'right'}}>
@@ -157,11 +170,37 @@ class Badge extends Component {
           </div>
           </Col>
         </Row>
-        <Row>
-          <Col md={11}>
+          <Row>
+          <Col md={9}>
             <Select 
                           className="attendees"
-                          placeholder="Select an attendee." 
+                          placeholder="Select a workshop" 
+                          options={workshop_select_options}
+                          value={this.state.selected_workshop}
+                          onChange={this.handleWorkshopChange}
+                          onClick={() => {this.setState(prevState => {
+                                            prevState.allow_print_all = true;
+                                            prevState.workshop_has_been_selected = true;
+                                            return prevState;
+                                          });}}
+                          clearable = {false}
+                    />
+          </Col>
+          {this.state.workshop_has_been_selected?
+            <Col md={3}>
+              <Button bsSize="large" onClick={this.generateBadge}>Generate All</Button>
+            </Col>
+            :
+            null
+            }
+        </Row>
+        <br />
+        <Row>
+        {this.state.allow_select_attendee ?
+          <Col md={9}>
+            <Select 
+                          className="attendees"
+                          placeholder="Select an attendee (optional)" 
                           options={attendee_select_options}
                           value={this.state.selected_registrant}
                           onChange={this.handleSelectAttendee}
@@ -171,15 +210,18 @@ class Badge extends Component {
                                           });}}
                           clearable = {false}
                     />
-            {this.state.attendee_has_been_selected ?
-            <div>
-            <br/>
-              <Button bsSize="large" onClick={this.generateBadge}>Generate Badge</Button>
-            </div>
+          </Col>
+        
             :
             null
             }
-          </Col>
+          {this.state.attendee_has_been_selected ?
+            <Col md={3}>
+              <Button bsSize="large" onClick={this.generateBadge}>Generate Individual Badge</Button>
+            </Col>
+            :
+            null
+            }    
         </Row>
       </Grid>
       );
