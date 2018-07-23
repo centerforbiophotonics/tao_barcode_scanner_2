@@ -42,7 +42,6 @@ class Badge extends Component {
 	}
 
   handleWorkshopChange(e){
-    console.log(e);
     if (e !== null && e.value !== ALL_WORKSHOPS) {
       let w = this.state.workshops.find(function (w) { return w.id === e.value; });
       this.setState(prevState => {
@@ -135,7 +134,6 @@ class Badge extends Component {
   }
 
   generateBulkBadges() {
-    console.log(this.state.selected_workshop);
       fetch(this.props.url + "tao/generate_pdf", {
         method: 'post',
         body: JSON.stringify({workshop_id: this.state.selected_workshop.value, all: (this.state.selected_workshop.value == ALL_WORKSHOPS) ? true : false}),
@@ -178,6 +176,8 @@ class Badge extends Component {
         }
 
       );
+
+    workshop_select_options.sort((a, b) => a.label.localeCompare(b.label));
 
     let attendee_select_options = [];
     if (this.state.data_loaded) {
@@ -249,6 +249,7 @@ class Badge extends Component {
                           className="workshops"
                           placeholder="Select an attendee (optional)" 
                           options={attendee_select_options}
+                          isSearchable={true}
                           value={this.state.selected_registrant}
                           onChange={this.handleSelectAttendee}
                           onClick={() => {this.setState(prevState => {
