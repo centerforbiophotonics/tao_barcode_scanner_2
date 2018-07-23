@@ -32,7 +32,12 @@ class TaoController < ApplicationController
   end
 
   def generate_pdf
-  	send_data generate_registrants(params[:attendee_id], params[:attendee_name]), :disposition => "attachment"
+  	if (params[:workshop_id])
+  		send_data generate_bulk_registrants(params[:workshop_id], params[:all]), :disposition => "attachment"
+  	else
+	  	#send_data gives the given binary data to the browser
+	  	send_data generate_registrants(params[:attendee_id], params[:attendee_name]), :disposition => "attachment"
+	end
   end
 
   private
