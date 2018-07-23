@@ -15,9 +15,15 @@
 
     /* Create two equal columns that floats next to each other */
     .column {
+        display: block;
+        white-space: nowrap;
+        page-break-after: avoid;
+        page-break-before: avoid;
+        page-break-inside: avoid;
         float: left;
         width: 50%;
-        padding: 2px;
+        padding-left: 100px;
+        padding-top: 55px;
     }
 
     /* Clear floats after the columns */
@@ -27,7 +33,14 @@
         clear: both;
     }
 
-    h2 {
+    .body {
+      width: 8.5in;
+      height: 11in;
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
+
+    h3 {
       font-family: Helvetica;
     }
   </style>
@@ -36,7 +49,7 @@
 <body>
 <% @set.each do |n, png| %>
   <div class="column">
-    <h2><%= n %>:</h2>
+    <h3><%= n %></h3>
     <img src="<%= png %>" />
   </div>
 <% end %>
