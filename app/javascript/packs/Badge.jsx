@@ -22,6 +22,7 @@ class Badge extends Component {
     this.handleSelectAttendee = this.handleSelectAttendee.bind(this);
     this.loadWorkshops = this.loadWorkshops.bind(this);
     this.generateBadge = this.generateBadge.bind(this);
+    this.generateBulkBadges = this.generateBulkBadges.bind(this);
     this.fetchAllAttendees = this.fetchAllAttendees.bind(this);
     this.download = this.download.bind(true);
 
@@ -30,6 +31,7 @@ class Badge extends Component {
       attendee_list: [],
       selected_workshop_attendee_list: [],
       attendee_select_options: null,
+      selected_workshop: {},
       selected_registrant: null,
       allow_print_all: false,
       attendee_has_been_selected: false,
@@ -44,7 +46,8 @@ class Badge extends Component {
     if (e !== null && e.value !== ALL_WORKSHOPS) {
       let w = this.state.workshops.find(function (w) { return w.id === e.value; });
       this.setState(prevState => {
-        prevState.selected_workshop = e.value;
+        prevState.selected_workshop.label = e.label;
+        prevState.selected_workshop.value = e.value;
         return prevState;
       });
       this.setState(prevState => {
@@ -63,7 +66,8 @@ class Badge extends Component {
     }
     else if (e !== null && e.value == ALL_WORKSHOPS)  {
         this.setState(prevState => {
-          prevState.selected_workshop = e.value;
+          prevState.selected_workshop.label = e.label;
+          prevState.selected_workshop.value = e.value;
           prevState.allow_select_attendee = true;
           prevState.workshop_has_been_selected = true;
           return prevState;
@@ -130,6 +134,19 @@ class Badge extends Component {
       .then(response => this.download(response, this.state.selected_registrant.label))
   }
 
+  generateBulkBadges() {
+    console.log(this.state.selected_workshop);
+      fetch(this.props.url + "tao/generate_pdf", {
+        method: 'post',
+        body: JSON.stringify({workshop_id: this.state.selected_workshop.value, all: (this.state.selected_workshop.value == ALL_WORKSHOPS) ? true : false}),
+        headers: {
+          'Content-Type' : 'application/json'
+        }
+      })
+      .then(response => response.blob())
+      .then(response => this.download(response, this.state.selected_workshop.label))
+  }
+
   download(res, name) {
     var blob = new Blob([res], { type: 'application/pdf' });
     var link = document.createElement('a');
@@ -164,7 +181,7 @@ class Badge extends Component {
 
     let attendee_select_options = [];
     if (this.state.data_loaded) {
-      if (this.state.selected_workshop != ALL_WORKSHOPS) {
+      if (this.state.selected_workshop.value != ALL_WORKSHOPS) {
         attendee_select_options = this.state.selected_workshop_attendee_list.map(r =>{
           return (
             {
@@ -218,7 +235,7 @@ class Badge extends Component {
           </Col>
           {this.state.workshop_has_been_selected?
             <Col md={3}>
-              <Button bsSize="large" onClick={this.generateBadge}>Generate All</Button>
+              <Button bsSize="large" bsStyle="primary" onClick={this.generateBulkBadges}>Generate All</Button>
             </Col>
             :
             null
@@ -247,7 +264,7 @@ class Badge extends Component {
             }
           {this.state.attendee_has_been_selected ?
             <Col md={3}>
-              <Button bsSize="large" onClick={this.generateBadge}>Generate Individual Badge</Button>
+              <Button bsSize="large" bsStyle="primary" onClick={this.generateBadge}>Generate Individual Badge</Button>
             </Col>
             :
             null
