@@ -11,6 +11,8 @@ import 'bootstrap/dist/css/bootstrap';
 
 library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faArrowLeft);
 
+const ALL_WORKSHOPS = 999;
+
 class Badge extends Component {
 	constructor(props) {
 		super(props);
@@ -38,7 +40,8 @@ class Badge extends Component {
 	}
 
   handleWorkshopChange(e){
-    if (e !== null) {
+    console.log(e);
+    if (e !== null && e.value !== ALL_WORKSHOPS) {
       let w = this.state.workshops.find(function (w) { return w.id === e.value; });
       this.setState(prevState => {
         prevState.selected_workshop = e.value;
@@ -57,6 +60,14 @@ class Badge extends Component {
                                     return prevState;
           });
         }, this);
+    }
+    else if (e !== null && e.value == ALL_WORKSHOPS)  {
+        this.setState(prevState => {
+          prevState.selected_workshop = e.value;
+          prevState.allow_select_attendee = true;
+          prevState.workshop_has_been_selected = true;
+          return prevState;
+      });
     }
   }
 
@@ -143,18 +154,37 @@ class Badge extends Component {
       )
     });
 
+    workshop_select_options.push(
+        {
+          label: "All",
+          value: ALL_WORKSHOPS
+        }
+
+      );
+
     let attendee_select_options = [];
     if (this.state.data_loaded) {
-      attendee_select_options = this.state.selected_workshop_attendee_list.map(r =>{
-      return (
-        {
-          label: r.name,
-          value: r.id
-        }
-      )
-    });
+      if (this.state.selected_workshop != ALL_WORKSHOPS) {
+        attendee_select_options = this.state.selected_workshop_attendee_list.map(r =>{
+          return (
+            {
+              label: r.name,
+              value: r.id
+            }
+          )
+        });
+      }
+      else {
+        attendee_select_options = this.state.attendee_list.map(r =>{
+          return (
+            {
+              label: r.name,
+              value: r.id
+            }
+          )
+        });
+      }
     }
-
 
 		return(
       <Grid>
@@ -199,7 +229,7 @@ class Badge extends Component {
         {this.state.allow_select_attendee ?
           <Col md={9}>
             <Select 
-                          className="attendees"
+                          className="workshops"
                           placeholder="Select an attendee (optional)" 
                           options={attendee_select_options}
                           value={this.state.selected_registrant}
