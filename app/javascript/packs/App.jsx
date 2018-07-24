@@ -27,7 +27,7 @@ class App extends Component {
     this.handlePasswordKeyDown = this.handlePasswordKeyDown.bind(this);
     this.handleScanActionChange = this.handleScanActionChange.bind(this);
     this.checkedInNames = this.checkedInNames.bind(this);
-    this.notCheckedInNames = this.checkedInNames.bind(this);
+    this.notCheckedInNames = this.notCheckedInNames.bind(this);
     this.updateAttendance = this.updateAttendance.bind(this);
     this.findAttendee = this.findAttendee.bind(this);
     this.sync = this.sync.bind(this);
