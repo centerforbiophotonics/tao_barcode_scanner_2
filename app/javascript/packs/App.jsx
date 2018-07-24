@@ -7,11 +7,11 @@ import 'react-select/dist/react-select.css';
 import { FormControl, Grid, Row, Col, Button } from 'react-bootstrap';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge} from '@fortawesome/free-solid-svg-icons'
+import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import 'bootstrap/dist/css/bootstrap'
 
-library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge)
+library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle)
 
 
 class App extends Component {
@@ -337,11 +337,12 @@ class App extends Component {
   downloadCSV() { //https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
     let rows = [];
     let i = 0;
-    rows[i++] = ["Workshop ID", "Attendee ID", "Attended"];
+    rows[i++] = ["Workshop Name", "Workshop ID", "Attendee ID", "Attended"];
     this.state.workshops.forEach(w => {
       w.registrants.forEach((r) => {
         let attendance_record = this.state.attendance[w.id + "-" + r.id];
         rows[i] = [];
+        rows[i].push(w.name);
         rows[i].push(w.id);
         rows[i].push(r.id);
         rows[i].push(attendance_record.checked_out);
@@ -479,6 +480,9 @@ class App extends Component {
                 </Button>
                 <Button href="tao/print" bsSize="large" disabled={this.state.tamper_lock ? true : false}>
                   <FontAwesomeIcon icon="id-badge" style={{color:"black"}}/>
+                </Button>
+                <Button href="tao/help" bsSize="large" disabled={this.state.tamper_lock ? true : false}>
+                  <FontAwesomeIcon icon="question-circle" style={{color:"black"}}/>
                 </Button>
               </div>
             </Col>
