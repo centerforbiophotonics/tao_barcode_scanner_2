@@ -27,6 +27,7 @@ class App extends Component {
     this.handlePasswordKeyDown = this.handlePasswordKeyDown.bind(this);
     this.handleScanActionChange = this.handleScanActionChange.bind(this);
     this.checkedInNames = this.checkedInNames.bind(this);
+    this.notCheckedInNames = this.checkedInNames.bind(this);
     this.updateAttendance = this.updateAttendance.bind(this);
     this.findAttendee = this.findAttendee.bind(this);
     this.sync = this.sync.bind(this);
@@ -289,8 +290,30 @@ class App extends Component {
         if (key.split("-")[0] == this.state.selected_workshop 
           && this.state.attendance[key].checked_out == true 
           && this.state.attendance[key].checked_in == true) {
+            console.log(key.split("-")[0]);
+            console.log(key.split("-")[1]);
+            console.log(this.findAttendee(key.split("-")[0], key.split("-")[1]));
             names.push(this.findAttendee(key.split("-")[0], key.split("-")[1]).name);
             names.push('\n'); //add line breaks to array used to display names in the attendance list
+        }
+      }
+      return names;
+    }
+  }
+
+  notCheckedInNames(){
+    if (this.state.selected_workshop == null) {
+      return []
+    }
+    else {
+      var names = [];
+      for (let key in this.state.attendance) {
+        if (key.split("-")[0] == this.state.selected_workshop 
+          && this.state.attendance[key].checked_out == false 
+          && this.state.attendance[key].checked_in == true) {
+            let r = this.findAttendee(key.split("-")[0], key.split("-")[1]);
+            names.push(r);
+            names.push("\n"); //add line breaks to array used to display names in the attendance list
         }
       }
       return names;
@@ -427,6 +450,11 @@ class App extends Component {
                 <div className="display-linebreak">
                   <h2>Attendance List:</h2>
                   {this.checkedInNames()}
+                  <br/>
+                  <h2>Not Checked In:</h2>
+                  {this.notCheckedInNames().map((r) =>
+                    (r === "\n") ? r : r.name
+                  )}
                 </div>
               </div>
 
