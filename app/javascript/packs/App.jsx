@@ -4,7 +4,7 @@ import './App.css';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 
-import { FormControl, Grid, Row, Col, Button } from 'react-bootstrap';
+import { FormControl, Grid, Row, Col, Button, Badge } from 'react-bootstrap';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle} from '@fortawesome/free-solid-svg-icons'
@@ -460,7 +460,7 @@ class App extends Component {
                   <br/>
                   <h2>Not Checked In:</h2>
                   {this.notCheckedInNames().map((r) =>
-                    (r === "\n") ? r : <a onClick={() => this.handleManualCheckIn(r.id)}>{r.name}</a>
+                    (r === "\n") ? r : <span>{r.name} <a onClick={() => this.handleManualCheckIn(r.id)}><Badge className={"badge-warning"} style={{cursor: 'pointer'}}>Manual Check-in</Badge></a></span>
                   )}
                 </div>
               </div>
