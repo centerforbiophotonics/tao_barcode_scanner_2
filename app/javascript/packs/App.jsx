@@ -290,9 +290,6 @@ class App extends Component {
         if (key.split("-")[0] == this.state.selected_workshop 
           && this.state.attendance[key].checked_out == true 
           && this.state.attendance[key].checked_in == true) {
-            console.log(key.split("-")[0]);
-            console.log(key.split("-")[1]);
-            console.log(this.findAttendee(key.split("-")[0], key.split("-")[1]));
             names.push(this.findAttendee(key.split("-")[0], key.split("-")[1]).name);
             names.push('\n'); //add line breaks to array used to display names in the attendance list
         }
@@ -322,6 +319,15 @@ class App extends Component {
 
   findAttendee(workshop_id, attendee_id) {
     return this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find((r) => { return r.id == attendee_id});
+  }
+
+  handleManualCheckIn(attendee_id) {
+    let key = this.state.selected_workshop + "-" + attendee_id;
+    this.setState(prevState => {   
+        prevState.attendance[key].checked_out = true;
+        return prevState;
+    });
+    this.postAttend(this.state.selected_workshop, attendee_id);
   }
 
   sync() {
@@ -454,7 +460,7 @@ class App extends Component {
                   <br/>
                   <h2>Not Checked In:</h2>
                   {this.notCheckedInNames().map((r) =>
-                    (r === "\n") ? r : r.name
+                    (r === "\n") ? r : <a onClick={() => this.handleManualCheckIn(r.id)}>{r.name}</a>
                   )}
                 </div>
               </div>
