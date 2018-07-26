@@ -33,6 +33,7 @@ class App extends Component {
     this.sync = this.sync.bind(this);
     this.downloadCSV = this.downloadCSV.bind(this);
     this.cache = this.cache.bind(this);
+    this.filterChangeHandler = this.filterChangeHandler.bind(this);
 
     this.state = {
       workshops: [],
@@ -43,6 +44,7 @@ class App extends Component {
       last_checked_name: "",
       check_in: false, //mode
       current_scan_val: "",
+      filter_input: "",
       tamper_lock: false,
       unlocking: false,
       password: "",
@@ -310,7 +312,7 @@ class App extends Component {
           && this.state.attendance[key].checked_in == true) {
             let r = this.findAttendee(key.split("-")[0], key.split("-")[1]);
             names.push(r);
-            names.push("\n"); //add line breaks to array used to display names in the attendance list
+            //names.push("\n"); //add line breaks to array used to display names in the attendance list
         }
       }
       return names;
@@ -328,6 +330,12 @@ class App extends Component {
         return prevState;
     });
     this.postAttend(this.state.selected_workshop, attendee_id);
+  }
+
+  filterChangeHandler(e){
+    this.setState({
+      filter_input: e.target.value,
+    })
   }
 
   sync() {
@@ -401,7 +409,6 @@ class App extends Component {
         )
       });
 
-
       let selected_workshop_name = this.state.selected_workshop != null ? 
         this.state.workshops.find(w => {return w.id === this.state.selected_workshop}).name
         :
@@ -459,8 +466,10 @@ class App extends Component {
                   {this.checkedInNames()}
                   <br/>
                   <h2>Not Checked In:</h2>
-                  {this.notCheckedInNames().map((r) =>
-                    (r === "\n") ? r : <span>{r.name} <a onClick={() => this.handleManualCheckIn(r.id)}><Badge className={"badge-warning"} style={{cursor: 'pointer'}}>Manual Check-in</Badge></a></span>
+                 
+                  {this.state.selected_workshop === null ?  null : <input value={this.state.filter_input} placeholder="Filter.." type="text" className="form-control" style={{width: "250px"}} onChange={this.filterChangeHandler.bind(this)}/>}
+                  {this.notCheckedInNames().filter(r => this.state.input === '' || r.name.includes(this.state.filter_input)).map((r) =>
+                    (r === "\n") ? r : <div>{r.name} <a onClick={() => this.handleManualCheckIn(r.id)}><Badge className={"badge-warning"} style={{cursor: 'pointer'}}>Manual Check-in</Badge></a></div>
                   )}
                 </div>
               </div>
@@ -503,8 +512,7 @@ class App extends Component {
           <h2>(potential connection error, please refresh the page)</h2>
         </div>
       );
-    }
-    
+    }   
   }
 
   componentDidMount(){
