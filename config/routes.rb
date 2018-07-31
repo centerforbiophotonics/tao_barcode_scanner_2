@@ -6,6 +6,9 @@ Rails.application.routes.draw do
   get 'tao/help'
   get 'users/user'
   get 'users', to: 'users#user'
+  post 'users/add'
+  post 'users/update'
+  post 'users/delete'
   post 'tao/generate_pdf'
   post 'tao/attend'
 end
