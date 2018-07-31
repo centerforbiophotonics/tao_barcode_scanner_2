@@ -73,3 +73,5 @@ gem "chunky_png"
 gem "pdfkit"
 
 gem "wkhtmltopdf-binary", "~> 0.12.4"
+
+gem 'rubycas-client-rails', :git => 'https://github.com/centerforbiophotonics/rubycas-client-rails.git'

@@ -89,7 +89,7 @@ class Badge extends Component {
 
 
   loadWorkshops(handler){
-    fetch(this.props.url + "tao/workshops")
+    fetch(this.props.url + "tao/workshops", {credentials: 'include'})
         .then(res => res.json())
         .then(
           (result) => {
@@ -127,7 +127,8 @@ class Badge extends Component {
         body: JSON.stringify({attendee_id: this.state.selected_registrant.value, attendee_name: this.state.selected_registrant.label}), //send string ID instead of numerical ID for attendee_id
         headers: {
           'Content-Type' : 'application/json'
-        }
+        },
+        credentials: 'include'
       })
       .then(response => response.blob())
       .then(response => this.download(response, this.state.selected_registrant.label))

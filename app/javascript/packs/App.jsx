@@ -75,7 +75,8 @@ class App extends Component {
         body: JSON.stringify({data: {workshop_id: workshop_id, attendee_id:attendee_id}}), //send string ID instead of numerical ID for attendee_id
         headers: {
           'Content-Type' : 'application/json'
-        }
+        },
+        credentials: 'include'
       }).then(res => {
           if (res.ok) {
             return res.json();
@@ -115,7 +116,7 @@ class App extends Component {
   }
 
   loadWorkshops(handler){
-    fetch(this.props.url + "tao/workshops")
+    fetch(this.props.url + "tao/workshops", {credentials: 'include'})
         .then(res => res.json())
         .then(
           (result) => {

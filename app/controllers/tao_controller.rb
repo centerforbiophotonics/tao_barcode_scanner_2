@@ -3,13 +3,14 @@ class TaoController < ApplicationController
   require_relative '../../lib/convert_to_pdf.rb'
   include ConvertToPdf
   def app
+    p session[:cas_user]
   end
 
   def workshops
   	#replace with actual server URL
-	workshops = HTTParty.get("http://localhost:3001/tao/workshops", format: :plain)
-	puts(workshops)
-	render :json => workshops.body
+    p session[:cas_user]
+    workshops = HTTParty.get("http://localhost:3001/tao/workshops", format: :plain)
+    render :json => workshops.body
   end
 
   def attend
