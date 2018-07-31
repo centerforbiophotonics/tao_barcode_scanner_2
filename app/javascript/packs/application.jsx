@@ -11,7 +11,9 @@ import WebpackerReact from 'webpacker-react'
 import App from './App'
 import Badge from './Badge'
 import Help from './Help'
+import Users from './Users'
 
 WebpackerReact.setup({App}) // ES6 shorthand for {Hello: Hello}
 WebpackerReact.setup({Badge})
 WebpackerReact.setup({Help})
+WebpackerReact.setup({Users})
