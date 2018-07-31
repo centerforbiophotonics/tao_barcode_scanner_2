@@ -109,7 +109,7 @@ class App extends Component {
             this.setState({
               error:error,
               current_message: "Thanks for coming "+this.state.last_checked_name,
-              urrent_message_color: "green"
+              current_message_color: "green"
             });
           }
         )
