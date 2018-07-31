@@ -4,7 +4,8 @@ Rails.application.routes.draw do
   get 'tao/workshops'
   get 'tao/print'
   get 'tao/help'
+  get 'users/user'
+  get 'users', to: 'users#user'
   post 'tao/generate_pdf'
   post 'tao/attend'
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
