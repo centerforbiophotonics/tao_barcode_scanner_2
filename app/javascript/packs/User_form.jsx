@@ -8,6 +8,7 @@ export default class AddUserForm extends React.Component {
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.handleIDChange = this.handleIDChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
 
     this.state = {nameValue: "",
   								emailValue: "",
@@ -24,6 +25,20 @@ export default class AddUserForm extends React.Component {
 
   handleIDChange(event) {
     this.setState({idValue: event.target.value});
+  }
+
+  handleSubmit() {
+  	console.log("submit");
+  	fetch(this.props.defaultProps.url + "users/add", {
+        method: 'post',
+        body: JSON.stringify({name: this.state.nameValue, email: this.state.emailValue, id: this.state.idValue}), //send string ID instead of numerical ID for attendee_id
+        headers: {
+          'Content-Type' : 'application/json'
+        },
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => this.props.handleResultsResponse(data))
   }
 
   render () {
@@ -45,7 +60,7 @@ export default class AddUserForm extends React.Component {
 		     	<input style={{width:"75px"}} type="text" value={this.state.idValue} onChange={this.handleIDChange}  />
 	     	</label>
 	     	<p>{this.state.nameValue}</p>
-	     	<Button bsStyle="primary">Submit</Button>
+	     	<Button bsStyle="primary" onClick={this.handleSubmit}>Submit</Button>
       </div>
       
   	)
