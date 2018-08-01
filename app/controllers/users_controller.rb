@@ -26,7 +26,7 @@ class UsersController < ApplicationController
 				u.email = params[:email]
 			end
 			if !params[:role].blank? 
-				u.email = params[:role]
+				u.role = params[:role]
 			end
 			u.save!
 			puts "User #{u.name}, ID #{u.cas_user} updated."

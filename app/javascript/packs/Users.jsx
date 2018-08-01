@@ -46,10 +46,9 @@ class Users extends Component {
   }
 
   handleDelete(id) {
-    console.log("submit");
     fetch(this.props.url + "users/delete", {
         method: 'post',
-        body: JSON.stringify({id: id}), //send string ID instead of numerical ID for attendee_id
+        body: JSON.stringify({id: id}),
         headers: {
           'Content-Type' : 'application/json'
         },
@@ -60,9 +59,7 @@ class Users extends Component {
   }
 
   handleEdit(user) {
-    console.log("edit");
-    this.setState({showEdit:"true"});
-    this.setState({selectedUser: user});
+    this.setState({showEdit:"true", selectedUser: user});
   }
 
   handleEditCancel() {
@@ -73,7 +70,6 @@ class Users extends Component {
 
 
 	render() {
-    //console.log(this.props.users);
     this.props.users.forEach((u) => console.log(u));
     console.log(this.props.users && this.props.users.length);
     this.props.users.map((u) => console.log(u));
@@ -95,7 +91,17 @@ class Users extends Component {
         <Row>
           <p>Current users:</p>
         </Row>
-        {(this.state.users && this.state.users.length) ? this.state.users.map((u) => <Row style={{paddingBottom: "5px"}}><Col md={3}>{u.name}</Col> <Col md={3}>{u.email}</Col> <Col md={3}><Button bsStyle="warning" bsSize="small" onClick={() => this.handleEdit(u)}>Update</Button>&nbsp;<Button bsStyle="danger" bsSize="small" onClick={() => this.handleDelete(u.id)}>Delete</Button> </Col></Row>) : <p>There are currently no registered users.</p>}
+        {(this.state.users && this.state.users.length) ? this.state.users.map((u) => 
+          <Row style={{paddingBottom: "5px"}}>
+            <Col md={3}>{u.name}</Col> 
+              <Col md={3}>{u.email}</Col>
+              <Col md={3}>{u.role}</Col>
+              <Col md={3}><Button bsStyle="warning" bsSize="small" onClick={() => this.handleEdit(u)}>Update</Button>&nbsp;
+              <Button bsStyle="danger" bsSize="small" onClick={() => {if (window.confirm('Are you sure you wish to delete this user?')) this.handleDelete(u.id)}}>Delete</Button> 
+            </Col>
+          </Row>) 
+        : 
+        <p>There are currently no registered users.</p>}
         <Row>
           <Button bsStyle="primary" onClick={this.showAddUser} disabled={this.state.showEdit ? true : false}>
             Add new user
@@ -103,7 +109,11 @@ class Users extends Component {
         </Row>
         <Row>
         {this.state.showAddUser || this.state.showEdit ?
-          <AddUserForm defaultProps={this.props} handleResultsResponse={this.handleAddResults} handleEditCancel={this.handleEditCancel} showEdit={this.state.showEdit} selectedUser={this.state.selectedUser}/>
+          <AddUserForm defaultProps={this.props} 
+                  handleResultsResponse={this.handleAddResults} 
+                  handleEditCancel={this.handleEditCancel} 
+                  showEdit={this.state.showEdit} 
+                  selectedUser={this.state.selectedUser}/>
           :
           null
         }
