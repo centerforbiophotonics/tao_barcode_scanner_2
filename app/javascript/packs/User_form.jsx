@@ -14,8 +14,9 @@ export default class AddUserForm extends React.Component {
 
     this.state = {nameValue: "",
   								emailValue: "",
+  								roleValue: "user",
   								idValue: ""};
-  }
+  	}
 
   handleNameChange(event) {
     this.setState({nameValue: event.target.value});
@@ -30,7 +31,6 @@ export default class AddUserForm extends React.Component {
   }
 
   handleRadioChange(event) {
-  	console.log(event);
   	this.setState({roleValue: event});
   }
 
@@ -38,7 +38,7 @@ export default class AddUserForm extends React.Component {
   	console.log("submit");
   	fetch(this.props.defaultProps.url + "users/add", {
         method: 'post',
-        body: JSON.stringify({name: this.state.nameValue, email: this.state.emailValue, role: this.state.roleValue, id: this.state.idValue}), //send string ID instead of numerical ID for attendee_id
+        body: JSON.stringify({name: this.state.nameValue, email: this.state.emailValue, role: this.state.roleValue, id: this.state.idValue}),
         headers: {
           'Content-Type' : 'application/json'
         },
@@ -52,7 +52,7 @@ export default class AddUserForm extends React.Component {
   	console.log("update");
   	fetch(this.props.defaultProps.url + "users/update", {
         method: 'post',
-        body: JSON.stringify({name: this.state.nameValue, email: this.state.emailValue, role: this.state.roleValue, id: this.props.selectedUser.id}), //send string ID instead of numerical ID for attendee_id
+        body: JSON.stringify({name: this.state.nameValue, email: this.state.emailValue, role: this.state.roleValue, id: this.props.selectedUser.id}),
         headers: {
           'Content-Type' : 'application/json'
         },
@@ -65,22 +65,23 @@ export default class AddUserForm extends React.Component {
   render () {
   	if (this.props.showEdit) {
   		console.log("alt");
+  		console.log(this.props.selectedUser);
   		return (
 	  		<div>
 		  		<br/>
 			    <label style={{paddingRight:"5px"}}>
 			     	Name: 
-			     	<input type="text" placeholder={this.props.selectedUser.name} value={this.state.nameValue} onChange={this.handleNameChange} name="name"/>
+			     	<input type="text" defaultValue={this.props.selectedUser.name} onChange={this.handleNameChange} name="name"/>
 		     	</label>
 
 		     	<label style={{paddingRight:"5px"}}>
 			     	Email:
-			     	<input type="email" placeholder={this.props.selectedUser.email} value={this.state.emailValue} onChange={this.handleEmailChange}  />
+			     	<input type="email" defaultValue={this.props.selectedUser.email} onChange={this.handleEmailChange}  />
 		     	</label>
 
 		     	<label>
 			     	<span bsClass="text-muted">ID:</span>
-			     	<input style={{width:"75px"}} type="text" value={this.props.selectedUser.cas_user} onChange={this.handleIDChange} disabled="true"  />
+			     	<input style={{width:"75px"}} type="text" defaultValue={this.props.selectedUser.cas_user} onChange={this.handleIDChange}  />
 		     	</label>
 		     	&nbsp;
 		     	&nbsp;
