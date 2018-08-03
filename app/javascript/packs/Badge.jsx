@@ -78,9 +78,6 @@ class Badge extends Component {
     if (e !== null) {
       this.setState(prevState => {
         prevState.selected_registrant = e;
-        return prevState;
-      });
-      this.setState(prevState => {
         prevState.attendee_has_been_selected = true;
         return prevState;
       });
@@ -122,25 +119,34 @@ class Badge extends Component {
   }
 
   generateBadge() {
+      let token = document.head.querySelector("[name=csrf-token]").content;
       fetch(this.props.url + "tao/generate_pdf", {
         method: 'post',
         body: JSON.stringify({attendee_id: this.state.selected_registrant.value, attendee_name: this.state.selected_registrant.label}), //send string ID instead of numerical ID for attendee_id
         headers: {
-          'Content-Type' : 'application/json'
+          'Content-Type' : 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': token
         },
-        credentials: 'include'
+        credentials: 'same-origin'
       })
       .then(response => response.blob())
       .then(response => this.download(response, this.state.selected_registrant.label))
   }
 
   generateBulkBadges() {
+      let token = document.head.querySelector("[name=csrf-token]").content;
       fetch(this.props.url + "tao/generate_pdf", {
         method: 'post',
         body: JSON.stringify({workshop_id: this.state.selected_workshop.value, all: (this.state.selected_workshop.value == ALL_WORKSHOPS) ? true : false}),
         headers: {
-          'Content-Type' : 'application/json'
-        }
+          'Content-Type' : 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': token
+        },
+        credentials: 'same-origin'
       })
       .then(response => response.blob())
       .then(response => this.download(response, this.state.selected_workshop.label))

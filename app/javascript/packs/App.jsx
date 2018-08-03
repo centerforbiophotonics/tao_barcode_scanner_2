@@ -69,14 +69,17 @@ class App extends Component {
   postAttend(workshop_id, attendee_id){
     console.log(this.props.url);
     console.log(JSON.stringify({workshop_id: workshop_id, attendee_id:attendee_id}));
-
+    let token = document.head.querySelector("[name=csrf-token]").content;
     fetch(this.props.url + "tao/attend", {
         method: 'post',
         body: JSON.stringify({data: {workshop_id: workshop_id, attendee_id:attendee_id}}), //send string ID instead of numerical ID for attendee_id
         headers: {
-          'Content-Type' : 'application/json'
+          'Content-Type' : 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-Token': token
         },
-        credentials: 'include'
+        credentials: 'same-origin'
       }).then(res => {
           if (res.ok) {
             return res.json();
