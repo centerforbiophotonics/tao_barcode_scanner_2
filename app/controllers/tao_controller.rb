@@ -1,7 +1,7 @@
 class TaoController < ApplicationController
-  skip_before_action :verify_authenticity_token, :only => [:attend, :generate_pdf]
   require_relative '../../lib/convert_to_pdf.rb'
   include ConvertToPdf
+
   def app
     p session[:cas_user]
   end
