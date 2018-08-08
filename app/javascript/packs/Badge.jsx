@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 
-import { FormControl, Grid, Row, Col, Button } from 'react-bootstrap';
+import { Grid, Row, Col, Button } from 'react-bootstrap';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faArrowLeft} from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import 'bootstrap/dist/css/bootstrap';
 
-library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faArrowLeft);
+library.add(faArrowLeft);
 
 const ALL_WORKSHOPS = 999;
 
