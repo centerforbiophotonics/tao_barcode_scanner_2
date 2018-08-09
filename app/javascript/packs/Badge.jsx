@@ -41,7 +41,7 @@ class Badge extends Component {
       attendee_select_options: null, //array of {label: string, value: string} objects passed to react-select components
       selected_workshop: {}, //currently selected workshop object
       selected_registrant: null, //currently selected registrant 
-      allow_print_all: false, //
+      allow_print_all: false, //potentially unusued?
       attendee_has_been_selected: false, //flag to check if user has selected an attendee
       workshop_has_been_selected: false, //flag to check if user has selected a workshop
       data_loaded: null //flag to track if the AJAX request to fetch workshop data has been performed
@@ -50,8 +50,9 @@ class Badge extends Component {
 	}
 
   /** 
-   *  Updates selected attendee
-   *  @param {object} e - {label: string, value: number}
+   * Updates selected attendee
+   * @param {object} e - {label: string, value: number}
+   * @public
    */
   handleWorkshopChange(e){
     console.log(e);
@@ -90,6 +91,7 @@ class Badge extends Component {
   /**
    * Updates selected attendee
    * @param {object} e - {label: string, value: string}
+   * @public
    */
   handleSelectAttendee(e){
     console.log(e);
@@ -105,6 +107,7 @@ class Badge extends Component {
 
   /**
    * Does an AJAX call to server to retrieve all workshop information, and then stores that information in the state.
+   * @public
    */
   loadWorkshops(handler){
     fetch(this.props.url + "tao/workshops", {credentials: 'include'})
@@ -127,6 +130,7 @@ class Badge extends Component {
 
   /**
    * Fetches all attendees from all workshops
+   * @public
    */
   fetchAllAttendees() {
     let table = new Map();
@@ -144,6 +148,7 @@ class Badge extends Component {
 
   /**
    * Does an AJAX call to the server in order generate a badge PDF, and then calls download() to offer the server response as a download for the user
+   * @public
    */
   generateBadge() {
       let token = document.head.querySelector("[name=csrf-token]").content;
@@ -164,6 +169,7 @@ class Badge extends Component {
 
   /** 
    * Does an AJAX call to the server in order generate a PDF containing many badges, and then calls download() to offer the server response as a download for the user
+   * @public
    */
   generateBulkBadges() {
       let token = document.head.querySelector("[name=csrf-token]").content;
@@ -185,6 +191,7 @@ class Badge extends Component {
 
   /**
    * Uses javascript to make the browser click an invisible link and launch a download prompt of an intended file
+   * @public
    */
   download(res, name) {
     var blob = new Blob([res], { type: 'application/pdf' });
