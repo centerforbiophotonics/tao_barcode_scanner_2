@@ -3,25 +3,19 @@ class TaoController < ApplicationController
   include ConvertToPdf
 
   def app
-    p session[:cas_user]
   end
 
   def workshops
   	#replace with actual server URL
-    p session[:cas_user]
     workshops = HTTParty.get("http://localhost:3001/tao/workshops", format: :plain)
     render :json => workshops.body
   end
 
   def attend
-  	puts(params)
-  	puts(tao_params)
   	#replace with actual server URL
   	r = HTTParty.post("http://localhost:3001/tao/attend", 
   		body: {:attendee_id => tao_params[:attendee_id], :workshop_id => tao_params[:workshop_id]})
-  	puts('####')
-  	puts(tao_params)
-  	puts(r.code)
+
   	unless (r.code == 200) 
   		render :json => {status: "failure"}, :status => r.code
   	else 

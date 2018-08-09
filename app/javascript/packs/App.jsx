@@ -21,28 +21,32 @@ class App extends Component {
     this.handleWorkshopChange = this.handleWorkshopChange.bind(this);
     this.postAttend = this.postAttend.bind(this);
     this.loadWorkshops = this.loadWorkshops.bind(this);
+    this.updateAttendanceFromWorkshops = this.updateAttendanceFromWorkshops.bind(this);
+    this.recordAttendance = this.recordAttendance.bind(this);
+    this.selectedWorkshop = this.selectedWorkshop.bind(this);
     this.checkScan = this.checkScan.bind(this);
     this.handleScan = this.handleScan.bind(this);
     this.handleLock = this.handleLock.bind(this);
     this.handlePasswordKeyDown = this.handlePasswordKeyDown.bind(this);
     this.handleScanActionChange = this.handleScanActionChange.bind(this);
-    this.checkedInNames = this.checkedInNames.bind(this);
-    this.notCheckedInNames = this.notCheckedInNames.bind(this);
-    this.updateAttendance = this.updateAttendance.bind(this);
+    this.checkedIn = this.checkedIn.bind(this);
+    this.notCheckedIn = this.notCheckedIn.bind(this);
     this.findAttendee = this.findAttendee.bind(this);
+    this.filterChangeHandler = this.filterChangeHandler.bind(this);
     this.sync = this.sync.bind(this);
     this.downloadCSV = this.downloadCSV.bind(this);
     this.cache = this.cache.bind(this);
-    this.filterChangeHandler = this.filterChangeHandler.bind(this);
+    
+
 
     this.state = {
       workshops: [],
       data_loaded: false,
       cache_dirty: false,
-      selected_workshop: null,
+      selected_workshop_id: null,
       attendance: {},
       last_checked_name: "",
-      check_in: false, //mode
+      check_in: false, //For events that require checking in and out, currently the icon toggle this has been removed because it is not needed for any upcoming events
       current_scan_val: "",
       filter_input: "",
       tamper_lock: false,
@@ -50,7 +54,8 @@ class App extends Component {
       password: "",
       error: null,
       current_message:"",
-      current_message_color: "green"
+      current_message_color: "green",
+      two_step_attendance: false
     }
 
     this.scan_timeout = null;
@@ -59,7 +64,7 @@ class App extends Component {
   handleWorkshopChange(e){
     if (e !== null) {
       this.setState(prevState => {
-        prevState.selected_workshop = e.value;
+        prevState.selected_workshop_id = e.value;
         prevState.current_message = "";
         return prevState;
       });
@@ -67,12 +72,10 @@ class App extends Component {
   }
 
   postAttend(workshop_id, attendee_id){
-    console.log(this.props.url);
-    console.log(JSON.stringify({workshop_id: workshop_id, attendee_id:attendee_id}));
     let token = document.head.querySelector("[name=csrf-token]").content;
     fetch(this.props.url + "tao/attend", {
         method: 'post',
-        body: JSON.stringify({data: {workshop_id: workshop_id, attendee_id:attendee_id}}), //send string ID instead of numerical ID for attendee_id
+        body: JSON.stringify({data: {workshop_id: workshop_id, attendee_id:attendee_id}}), 
         headers: {
           'Content-Type' : 'application/json',
           'Accept': 'application/json',
@@ -83,16 +86,15 @@ class App extends Component {
       }).then(res => {
           if (res.ok) {
             return res.json();
-          }
-          else {
+          } else {
             throw new Error('something went wrong!')
           }
         })
         .then(
           (result) => {
             this.setState(prevState => {
-              let name = prevState.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})["name"]
-              let current_r = this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})
+              let current_r = prevState.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})
+              
               prevState.current_scan_val = "";
               prevState.error = null;
               prevState.cache_dirty = false;
@@ -108,7 +110,6 @@ class App extends Component {
             });
           },
           (error) => {
-            let name = this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})["name"]
             this.setState({
               error:error,
               current_message: "Thanks for coming "+this.state.last_checked_name,
@@ -138,7 +139,7 @@ class App extends Component {
         )
   }
 
-  updateAttendance(workshops, handler) {
+  updateAttendanceFromWorkshops(workshops, handler) {
     if (workshops != null) {
       workshops.forEach(w => {
         w.registrants.forEach(r => {
@@ -150,17 +151,15 @@ class App extends Component {
                 prevState.attendance[key].checked_out = true;
                 return prevState
               }, handler);
-            }
-            else {
+            } else {
               if (handler) {
                 handler();
               }
             }
-          }
-          else {
+          } else {
             this.setState(prevState => {
               prevState.attendance[key] = {
-                checked_in : true,
+                checked_in : (this.state.two_step_attendance ? r.attended : true),
                 checked_out : r.attended
               };
               return prevState
@@ -171,69 +170,75 @@ class App extends Component {
     } 
   }
 
+  recordAttendance(attendee_id){
+    let key = this.state.selected_workshop_id + "-" + attendee_id;
+    let attendee = this.findAttendee(this.state.selected_workshop_id, attendee_id);
+
+    this.setState(
+      prevState => {  
+        prevState.last_checked_name = attendee.name;
+
+        let attendance = prevState.attendance[key];
+
+        if (prevState.check_in) {
+          attendance.checked_in = true;
+        } else {
+          attendance.checked_out = true;
+        }
+        prevState.current_scan_val = "";
+
+        if (attendance.checked_out == true && attendance.checked_in == true) {
+          if (attendee.attended){
+            prevState.current_message = prevState.last_checked_name+", you are already checked in.";
+            prevState.current_message_color = "orange";
+          } else {
+            prevState.current_message = "Thanks for coming "+prevState.last_checked_name;
+            prevState.current_message_color = "green";
+          }
+        } 
+
+        return prevState;
+      }, 
+      () => {
+        this.cache();
+        if (this.state.attendance[key].checked_out == true && this.state.attendance[key].checked_in == true) {
+          this.sync();
+        }
+      }
+    );
+  }
+
+  selectedWorkshop(){
+    return this.state.workshops.find(w => {return w.id === this.state.selected_workshop_id })
+  }
+
   checkScan(){
     if (this.state.workshops != null) {
-      let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
+      let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.id});
       let attendee_id = this.state.current_scan_val;
+      
       if (workshop_registrants.includes(attendee_id)){
-        let key = this.state.selected_workshop + "-" + attendee_id;
-        let name = this.state.workshops.find(w => {return w.id == this.state.selected_workshop}).registrants.find(r => {return r.id == attendee_id})["name"]
-        this.setState({
-            last_checked_name: name
-        });
-        this.setState(prevState => {   
-          if (prevState.check_in) {
-            prevState.attendance[key].checked_in = true;
-          }
-          else {
-            prevState.attendance[key].checked_out = true;
-          }
-          prevState.current_scan_val = "";
-          return prevState;
-        }, () => {
-          this.cache();
-          if (this.state.attendance[key].checked_out == true && this.state.attendance[key].checked_in == true) {
-            let r = this.state.workshops.find(w => {return w.id == this.state.selected_workshop}).registrants.find(r => {return r.id == attendee_id});
-            if (r.attended) {
-              this.setState(
-                {
-                  current_message:this.state.last_checked_name+", you are already checked in.",
-                  current_message_color:"orange"
-                }
-              );
-            }
-            else {
-              this.setState(
-                {
-                  current_message:"Thanks for coming "+this.state.last_checked_name,
-                  current_message_color:"green"
-                }
-              );
-            }
-
-            this.sync();
-          }
-        });
+        this.recordAttendance(attendee_id);
       } else {
         // Refresh workshop data in case attendee was just registered
         this.loadWorkshops(workshops => {
-          this.updateAttendance(workshops, () => {
+          this.updateAttendanceFromWorkshops(workshops, () => {
             if (this.state.workshops != null) {
-            let workshop_registrants = this.state.workshops.find(w => {return w.id === this.state.selected_workshop }).registrants.map((r) => { return r.id});
-            let attendee_id = this.state.current_scan_val;
-            if (workshop_registrants.includes(attendee_id)){
-              this.postAttend(this.state.selected_workshop, attendee_id);  
-            } else {
-              this.setState(
-                {
-                  current_scan_val: "", 
-                  current_message:"You aren't registered for this workshop.", 
-                  current_message_color:"red"
-                }
-              );
-           }
-         }
-         });
+              let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.id});
+
+              if (workshop_registrants.includes(attendee_id)){
+                this.recordAttendance(attendee_id);
+              } else {
+                this.setState(
+                  {
+                    current_scan_val: "", 
+                    current_message:"You aren't registered for this workshop.", 
+                    current_message_color:"red"
+                  }
+                );
+              }
+            }
+          });
         });
       }
     }
@@ -256,7 +261,7 @@ class App extends Component {
       this.setState({unlocking:true});
       document.removeEventListener("keydown", this.handleScan, false);
     } else {
-      if (this.state.selected_workshop !== null){
+      if (this.state.selected_workshop_id !== null){
         this.setState({tamper_lock:true});
         document.addEventListener("keydown", this.handleScan, false);
       } else {
@@ -286,55 +291,61 @@ class App extends Component {
     });
   }
 
-  checkedInNames(){
-    if (this.state.selected_workshop == null) {
+  checkedIn(){
+    if (this.state.selected_workshop_id == null) {
       return []
     }
     else {
-      var names = [];
+      var registrants = [];
       for (let key in this.state.attendance) {
-        if (key.split("-")[0] == this.state.selected_workshop 
+        if (key.split("-")[0] == this.state.selected_workshop_id 
           && this.state.attendance[key].checked_out == true 
           && this.state.attendance[key].checked_in == true) {
-            names.push(this.findAttendee(key.split("-")[0], key.split("-")[1]).name);
-            names.push('\n'); //add line breaks to array used to display names in the attendance list
+            registrants.push(this.findAttendee(key.split("-")[0], key.split("-")[1]));
         }
       }
-      return names;
+      return registrants.sort((a,b) => {
+        if (a.name < b.name)
+          return -1;
+        if (a.name > b.name)
+          return 1;
+        return 0;
+      });;
     }
   }
 
-  notCheckedInNames(){
-    if (this.state.selected_workshop == null) {
-      return []
+  notCheckedIn(){
+    if (this.state.selected_workshop_id == null) {
+      return [];
     }
+
     else {
-      var names = [];
+      var registrants = [];
       for (let key in this.state.attendance) {
-        if (key.split("-")[0] == this.state.selected_workshop 
+        if (key.split("-")[0] == this.state.selected_workshop_id 
           && this.state.attendance[key].checked_out == false 
           && this.state.attendance[key].checked_in == true) {
-            let r = this.findAttendee(key.split("-")[0], key.split("-")[1]);
-            names.push(r);
-            //names.push("\n"); //add line breaks to array used to display names in the attendance list
+            registrants.push(this.findAttendee(key.split("-")[0], key.split("-")[1]));
         }
       }
-      return names;
+      return registrants.sort((a,b) => {
+        if (a.name < b.name)
+          return -1;
+        if (a.name > b.name)
+          return 1;
+        return 0;
+      });
     }
   }
 
   findAttendee(workshop_id, attendee_id) {
-    return this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find((r) => { return r.id == attendee_id});
+    if (this.state.workshops.find(w => {return w.id == workshop_id}) === undefined){
+      return undefined
+    } else {
+      return this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find((r) => { return r.id == attendee_id});
+    }
   }
 
-  handleManualCheckIn(attendee_id) {
-    let key = this.state.selected_workshop + "-" + attendee_id;
-    this.setState(prevState => {   
-        prevState.attendance[key].checked_out = true;
-        return prevState;
-    });
-    this.postAttend(this.state.selected_workshop, attendee_id);
-  }
 
   filterChangeHandler(e){
     this.setState({
@@ -343,10 +354,11 @@ class App extends Component {
   }
 
   sync() {
-    this.state.workshops.forEach(w => {w.registrants.forEach((r) => {
-      let attendance_record = this.state.attendance[w.id + "-" + r.id]
-      if (r.attended == false && attendance_record.checked_in && attendance_record.checked_out) {
-        this.postAttend(w.id, r.id);
+    this.state.workshops.forEach(w => {
+      w.registrants.forEach((r) => {
+        let attendance_record = this.state.attendance[w.id + "-" + r.id]
+        if (r.attended == false && attendance_record.checked_in && attendance_record.checked_out) {
+          this.postAttend(w.id, r.id);
         }
       })
     })
@@ -389,7 +401,6 @@ class App extends Component {
   }
 
   render() {
-
     if (this.state.unlocking){
       return (
         <Grid>
@@ -404,108 +415,125 @@ class App extends Component {
     }
 
     if (this.state.data_loaded && this.state.workshops != null){
-      let workshop_select_options = this.state.workshops.map(w =>{
-        return (
-          {
-            label: w.name,
-            value: w.id
-          } 
-        )
-      });
+      let workshop_select_options = this.state.workshops.map(w =>({ label: w.name, value: w.id}));
 
-      let selected_workshop_name = this.state.selected_workshop != null ? 
-        this.state.workshops.find(w => {return w.id === this.state.selected_workshop}).name
+      let selected_workshop_name = this.state.selected_workshop_id != null ? 
+        this.selectedWorkshop().name
         :
         "None";
 
       var storage = JSON.parse(localStorage.getItem('check_out_cache'));
+      let locked = this.state.tamper_lock;
 
       return (
         <Grid>
           <Row>
             <Col md={8} mdOffset={2}>
-              <h1> TAO Workshop Attendance Scanner </h1>
-              
               <Row style={{marginBottom:"5px"}}>
                 <Col md={11}>
-                  {this.state.tamper_lock === false ? 
+                  {locked  ? 
+                    <h3 style={{marginTop:"5px"}}>
+                      {this.state.check_in ? "Checking in to" : "Checking out of"} {selected_workshop_name} 
+                    </h3>
+                    :
                     <Select 
                       className="workshops"
                       placeholder="Select a Workshop" 
                       options={workshop_select_options} 
-                      value={this.state.selected_workshop}
+                      value={this.state.selected_workshop_id}
                       onChange={this.handleWorkshopChange}
                       clearable = {false}
                     />
-                    :
-                    <h3 style={{marginTop:"5px"}}>{this.state.check_in ? "Checking in to" : "Checking out of"} {selected_workshop_name} </h3>
                   }
                 </Col>
 
                 <Col md={1}>
                   <Button bsSize="large" style={{color:"black", float:"right"}} onClick={this.handleLock}>
-                    {this.state.tamper_lock ? 
+                    {locked ? 
                       <FontAwesomeIcon icon="lock-open"/>
                       : 
                       <FontAwesomeIcon icon="lock"/>
                     }
                   </Button>
-
-                  {this.state.tamper_lock === false ?
-                    null
-                    :
-                    null
-                  }
                 </Col>
               </Row>
 
-              {this.state.tamper_lock ?
+              {locked ?
                 <div>
-                <h2 style={{color:this.state.current_message_color}}>{this.state.current_message}</h2>
+                  <h2 style={{color:this.state.current_message_color}}>{this.state.current_message}</h2>
                 </div>
                 :
-                <div>
-                <div className="display-linebreak">
-                  <h2>Attendance List:</h2>
-                  {this.checkedInNames()}
-                  <br/>
-                  <h2>Not Checked In:</h2>
-                 
-                  {this.state.selected_workshop === null ?  null : <input value={this.state.filter_input} placeholder="Filter.." type="text" className="form-control" style={{width: "250px"}} onChange={this.filterChangeHandler.bind(this)}/>}
-                  {this.notCheckedInNames().filter(r => this.state.input === '' || r.name.includes(this.state.filter_input)).map((r) =>
-                    (r === "\n") ? r : <div>{r.name} <a onClick={() => this.handleManualCheckIn(r.id)}><Badge className={"badge-warning"} style={{cursor: 'pointer'}}>Manual Check-in</Badge></a></div>
-                  )}
-                </div>
-              </div>
+                (this.state.selected_workshop_id === null ? null :
+                  <div>
+                    <div className="display-linebreak">
+                      <h2>Attendance List:</h2>
+                      <ul>
+                        {this.checkedIn().map(r => (<li key={r.id}>{r.name}</li>))}
+                      </ul>
+                      <br/>
 
+                      <h2>Not Checked In:</h2>
+                     
+                      {this.state.selected_workshop_id === null ? null : 
+                        <input 
+                          value={this.state.filter_input} 
+                          placeholder="Filter.." 
+                          type="text" 
+                          className="form-control" 
+                          style={{width: "250px"}} 
+                          onChange={this.filterChangeHandler.bind(this)}
+                        />
+                      }
+                      
+                      {this.notCheckedIn().filter(r => {
+                        let f_string = this.state.filter_input.toLowerCase();
+                        let lc_name = r.name.toLowerCase();
+                        return (
+                          f_string === '' || lc_name.includes(f_string)
+                        )
+                      }).map((r) =>
+                        (r === "\n") ? r : 
+                          <div key={r.id}> 
+                            {r.name} 
+                            <a onClick={() => this.recordAttendance(r.id)}>
+                              <Badge className={"badge-warning"} style={{cursor: 'pointer'}}>Manual Check-in</Badge>
+                            </a>
+                          </div>
+                      )}
+                    </div>
+                  </div>
+                )
               }
              
             </Col>
             <Col md={2}>
-            <div>
-              {this.state.cache_dirty ?
-                <Button bsSize="large" onClick={this.sync} disabled={this.state.cache_dirty ? false : true}>
-                <FontAwesomeIcon icon="wifi" style={this.state.cache_dirty ? {color:"red"} : {color:"black"}} />
-                </Button>
-                :
-                null
-              }
-                <Button bsSize="large"  onClick={this.downloadCSV} disabled={this.state.tamper_lock ? true : false}>
-                  {this.state.cache_dirty && this.state.error !== null   ? 
-                  <FontAwesomeIcon icon="save" style={{color:"red"}}/>
-                  : 
-                  <FontAwesomeIcon icon="save" style={{color:"black"}}/>
+              <div>
+                {this.state.cache_dirty ?
+                  <Button bsSize="large" onClick={this.sync} disabled={this.state.cache_dirty ? false : true}>
+                    <FontAwesomeIcon icon="wifi" style={{color:"red"}} />
+                  </Button>
+                  :
+                  null
+                }
+                <Button bsSize="large"  onClick={this.downloadCSV} disabled={locked}>
+                  {this.state.cache_dirty && this.state.error !== null ? 
+                    <FontAwesomeIcon icon="save" style={{color:"red"}}/>
+                    : 
+                    <FontAwesomeIcon icon="save" style={{color:"black"}}/>
                   }
                 </Button>
-                <Button href="tao/print" bsSize="large" disabled={this.state.tamper_lock ? true : false}>
-                  <FontAwesomeIcon icon="id-badge" style={{color:"black"}}/>
-                </Button>
-                <Button href="tao/help" bsSize="large" disabled={this.state.tamper_lock ? true : false}>
-                  <FontAwesomeIcon icon="question-circle" style={{color:"black"}}/>
-                </Button>
+                {
+                  /*<Button href="tao/print" bsSize="large" disabled={locked}>
+                    <FontAwesomeIcon icon="id-badge" style={{color:"black"}}/>
+                  </Button>*/
+                }
+                {locked ? null :
+                  <Button href="tao/help" bsSize="large">
+                    <FontAwesomeIcon icon="question-circle" style={{color:"black"}}/>
+                  </Button>
+                }
               </div>
             </Col>
-
           </Row>
         </Grid>
       );
@@ -522,17 +550,12 @@ class App extends Component {
   componentDidMount(){
     let cache_data = JSON.parse(localStorage.getItem("check_out_cache"));
     if (cache_data != null) {
-      this.setState({attendance:cache_data}, () => {this.loadWorkshops(this.updateAttendance)});
+      this.setState({attendance:cache_data}, () => {this.loadWorkshops(this.updateAttendanceFromWorkshops)});
     }
     else {
-      this.loadWorkshops(this.updateAttendance)
+      this.loadWorkshops(this.updateAttendanceFromWorkshops)
     }
   }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return true;
-  }
-
 }
 
 export default App;
