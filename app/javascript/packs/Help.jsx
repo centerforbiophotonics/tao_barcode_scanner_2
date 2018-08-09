@@ -12,6 +12,9 @@ import 'bootstrap/dist/css/bootstrap';
 
 library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faArrowLeft);
 
+/** 
+ * Renders help page.
+ */
 class Help extends Component {
 	constructor(props) {
 		super(props);

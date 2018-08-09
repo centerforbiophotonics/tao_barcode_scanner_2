@@ -13,7 +13,15 @@ library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faAr
 
 const ALL_WORKSHOPS = 999;
 
+
+/**
+ * @class Interface for generating badges
+ * @property {string} URL - "A URL!"
+ */
 class Badge extends Component {
+  static propTypes = {
+    url: string
+  }
 	constructor(props) {
 		super(props);
 
@@ -27,21 +35,26 @@ class Badge extends Component {
     this.download = this.download.bind(true);
 
 		this.state = {
-			workshops: [],
-      attendee_list: [],
-      selected_workshop_attendee_list: [],
-      attendee_select_options: null,
-      selected_workshop: {},
-      selected_registrant: null,
-      allow_print_all: false,
-      attendee_has_been_selected: false,
-      workshop_has_been_selected: false,
-      data_loaded: null
+			workshops: [], //array of workshop objects
+      attendee_list: [], //array of attendee objects
+      selected_workshop_attendee_list: [], //array of all registrants that are registered for the currently selected workshop
+      attendee_select_options: null, //array of {label: string, value: string} objects passed to react-select components
+      selected_workshop: {}, //currently selected workshop object
+      selected_registrant: null, //currently selected registrant 
+      allow_print_all: false, //
+      attendee_has_been_selected: false, //flag to check if user has selected an attendee
+      workshop_has_been_selected: false, //flag to check if user has selected a workshop
+      data_loaded: null //flag to track if the AJAX request to fetch workshop data has been performed
 		};
 
 	}
 
+  /** 
+   *  Updates selected attendee
+   *  @param {object} e - {label: string, value: number}
+   */
   handleWorkshopChange(e){
+    console.log(e);
     if (e !== null && e.value !== ALL_WORKSHOPS) {
       let w = this.state.workshops.find(function (w) { return w.id === e.value; });
       this.setState(prevState => {
@@ -74,7 +87,12 @@ class Badge extends Component {
     }
   }
 
+  /**
+   * Updates selected attendee
+   * @param {object} e - {label: string, value: string}
+   */
   handleSelectAttendee(e){
+    console.log(e);
     if (e !== null) {
       this.setState(prevState => {
         prevState.selected_registrant = e;
@@ -85,6 +103,9 @@ class Badge extends Component {
   }
 
 
+  /**
+   * Does an AJAX call to server to retrieve all workshop information, and then stores that information in the state.
+   */
   loadWorkshops(handler){
     fetch(this.props.url + "tao/workshops", {credentials: 'include'})
         .then(res => res.json())
@@ -104,6 +125,9 @@ class Badge extends Component {
         )
   }
 
+  /**
+   * Fetches all attendees from all workshops
+   */
   fetchAllAttendees() {
     let table = new Map();
     this.state.workshops.forEach(function(w) {
@@ -118,6 +142,9 @@ class Badge extends Component {
     }, this);
   }
 
+  /**
+   * Does an AJAX call to the server in order generate a badge PDF, and then calls download() to offer the server response as a download for the user
+   */
   generateBadge() {
       let token = document.head.querySelector("[name=csrf-token]").content;
       fetch(this.props.url + "tao/generate_pdf", {
@@ -135,6 +162,9 @@ class Badge extends Component {
       .then(response => this.download(response, this.state.selected_registrant.label))
   }
 
+  /** 
+   * Does an AJAX call to the server in order generate a PDF containing many badges, and then calls download() to offer the server response as a download for the user
+   */
   generateBulkBadges() {
       let token = document.head.querySelector("[name=csrf-token]").content;
       fetch(this.props.url + "tao/generate_pdf", {
@@ -152,6 +182,10 @@ class Badge extends Component {
       .then(response => this.download(response, this.state.selected_workshop.label))
   }
 
+
+  /**
+   * Uses javascript to make the browser click an invisible link and launch a download prompt of an intended file
+   */
   download(res, name) {
     var blob = new Blob([res], { type: 'application/pdf' });
     var link = document.createElement('a');
