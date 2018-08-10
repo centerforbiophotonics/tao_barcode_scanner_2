@@ -16,6 +16,7 @@
     "webpacker-react": "^0.3.2"
   },
   "devDependencies": {
+    "react-styleguidist": "^7.2.1",
     "webpack-dev-server": "2.11.2"
   }
 }

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types'
 import './App.css';
 
 import Select from 'react-select';
@@ -7,14 +8,29 @@ import 'react-select/dist/react-select.css';
 import { FormControl, Grid, Row, Col, Button, Badge } from 'react-bootstrap';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle} from '@fortawesome/free-solid-svg-icons'
+import { faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import 'bootstrap/dist/css/bootstrap'
+import 'bootstrap/dist/css/bootstrap.css'
 
 library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle)
 
-
+/**
+ * Interface for registering attendees in workshops using a scanning device or manually.
+ */
 class App extends Component {
+  static propTypes = {
+    /** Url Desc */
+    url: PropTypes.string,
+  };
+
+  static defaultProps = {
+    url: "http://localhost:3000/"
+  };
+
+  /**
+   * The constructor lifecycle method.
+   * @param {object} props - The component's props
+   */
   constructor(props){
     super(props);
 
@@ -40,37 +56,70 @@ class App extends Component {
 
 
     this.state = {
+      /** 
+      * An array of objects representing the workshops. Loaded from the server or browser cache and should never be updated directly.
+      * [{id:number, name:string, registrants:[{id:number, name:string, attended:boolean}, ...]}, ...]
+      */
       workshops: [],
-      data_loaded: false,
-      cache_dirty: false,
-      selected_workshop_id: null,
+      /** 
+      * Object with a key for each workshop-attendee pair that tracks whether they have checked in and checked out 
+      * {"1-kerbuser": {checked_in:boolean, checked_out:boolean}}
+      */
       attendance: {},
+      /** Whether data has been loaded from the server or browser cache */
+      data_loaded: false,
+      /** Whether the browser cache has data that differs from the server */
+      cache_dirty: false,
+      /** The id of the workshop currently selected */
+      selected_workshop_id: null,
+      /** The name last person who was checked in/out. Used to display confirmation messages to the attendees */
       last_checked_name: "",
-      check_in: false, //For events that require checking in and out, currently the icon toggle this has been removed because it is not needed for any upcoming events
+      /** For events that require checking in and out, currently the icon toggle this has been removed because it is not needed for any upcoming events */
+      check_in: false, 
+      /** Contains characters from keypress events triggered by a barcode scanner or mag stripe reader. Is cleared on a 50ms timeout from the last keypress event to prevent manually entering an attendee_id. */
       current_scan_val: "",
+      /** The value of the filter box used to filter the list of attendees who have not yet checked in. */
       filter_input: "",
+      /** Boolean indicating whether the page view is locked to prevent attendee shenanigans. */
       tamper_lock: false,
+      /** Boolean indicating the unlock button has been pressed and the app is waiting to recieve the unlock password from the user. */
       unlocking: false,
+      /** The unlock password entered by the user */
       password: "",
+      /** If any AJAX calls result in an error the error attribute from the response data is saved here. */
       error: null,
+      /** The current confirmation or error message to display to an attendee when the page is locked. */
       current_message:"",
+      /** The color of the current confirmation or error message to display to an attendee when the page is locked. */
       current_message_color: "green",
+      /** Whether the app should require a check-in and check-out scan before marking the attendee as having attended. */
       two_step_attendance: false
     }
 
     this.scan_timeout = null;
   }
 
-  handleWorkshopChange(e){
-    if (e !== null) {
+  /**
+   * Changes the selected workshop. Invoked as an onChange handler from "select.workshops"
+   * @param {object} option - {label:string, value:string}
+   * @public
+   */
+  handleWorkshopChange(option){
+    if (option !== null) {
       this.setState(prevState => {
-        prevState.selected_workshop_id = e.value;
+        prevState.selected_workshop_id = option.value;
         prevState.current_message = "";
         return prevState;
       });
     }
   }
 
+  /**
+   * Make an AJAX call to record a single attendees attendance. Even if the AJAX call fails the state is updated to display a green confirmation message so that the attendee will leave the room.
+   * @param {integer} workshop_id
+   * @param {string} attendee_id - Kerberos username or Student ID
+   * @public 
+   */
   postAttend(workshop_id, attendee_id){
     let token = document.head.querySelector("[name=csrf-token]").content;
     fetch(this.props.url + "tao/attend", {
@@ -119,27 +168,39 @@ class App extends Component {
         )
   }
 
+  /** 
+   * Makes an AJAX call to update the workshops in state. This is invoked once when the component mounts and whenever an attendee_id is scanned which is not found in the selected workshop in case the workshop registration has been updated since the page was loaded.
+   * @param {function} handler - (OPTIONAL) callback function to invoke after AJAX is successful and the state has been updated
+   * @public
+   */  
   loadWorkshops(handler){
     fetch(this.props.url + "tao/workshops", {credentials: 'include'})
-        .then(res => res.json())
-        .then(
-          (result) => {
-            if (result != null) {
+      .then(res => res.json())
+      .then(
+        (result) => {
+          if (result != null) {
             this.setState({
               data_loaded: true,
               workshops: result,
               error: null
-            }, () => {handler(result)});}
-          },
-          (error) => {
-            this.setState({
-              error:error
-            });
+            }, () => {this.updateAttendanceFromWorkshops(handler)})
           }
-        )
+        },
+        (error) => {
+          this.setState({
+            error:error
+          });
+        }
+      );
   }
 
-  updateAttendanceFromWorkshops(workshops, handler) {
+  /** 
+   * Updates the attendance state variable after the workshops data has been updated so the two stay in sync. Is called by loadWorkshops after it finished updating the state.
+   * @param {function} handler - (OPTIONAL) callback function to invoke after the state has been updated
+   * @public
+   */ 
+  updateAttendanceFromWorkshops(handler) {
+    let workshops = this.state.workshops;
     if (workshops != null) {
       workshops.forEach(w => {
         w.registrants.forEach(r => {
@@ -150,11 +211,9 @@ class App extends Component {
                 prevState.attendance[key].checked_in = true;
                 prevState.attendance[key].checked_out = true;
                 return prevState
-              }, handler);
+              }, () => {if (handler) handler()});
             } else {
-              if (handler) {
-                handler();
-              }
+              if (handler) handler()
             }
           } else {
             this.setState(prevState => {
@@ -170,6 +229,11 @@ class App extends Component {
     } 
   }
 
+  /** 
+   * Updates the state to indicate an attendee being registered. Caches the attendance state variable and then syncs with the server.
+   * @param {string} attendee_id - the attendee to mark attendance for in the selected workshop.
+   * @public
+   */ 
   recordAttendance(attendee_id){
     let key = this.state.selected_workshop_id + "-" + attendee_id;
     let attendee = this.findAttendee(this.state.selected_workshop_id, attendee_id);
@@ -208,10 +272,21 @@ class App extends Component {
     );
   }
 
+  /** 
+   * Gets the workshop object for the currently selected workshop id.
+   * @public
+   * @return {object} {id:number, name:string, registrants:array}
+   */ 
   selectedWorkshop(){
     return this.state.workshops.find(w => {return w.id === this.state.selected_workshop_id })
   }
 
+  /** 
+   * Checks if the text that has just been scanned matches any attendee ids in the selected workshop. 
+   * Refreshes the workshop data after the first mismatch in it has been recently updated. 
+   * After two failures it shows a message to the attendee warning them that are not registered.
+   * @public
+   */ 
   checkScan(){
     if (this.state.workshops != null) {
       let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.id});
@@ -221,29 +296,33 @@ class App extends Component {
         this.recordAttendance(attendee_id);
       } else {
         // Refresh workshop data in case attendee was just registered
-        this.loadWorkshops(workshops => {
-          this.updateAttendanceFromWorkshops(workshops, () => {
-            if (this.state.workshops != null) {
-              let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.id});
+        this.loadWorkshops(() => {
+          if (this.state.workshops != null) {
+            let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.id});
 
-              if (workshop_registrants.includes(attendee_id)){
-                this.recordAttendance(attendee_id);
-              } else {
-                this.setState(
-                  {
-                    current_scan_val: "", 
-                    current_message:"You aren't registered for this workshop.", 
-                    current_message_color:"red"
-                  }
-                );
-              }
+            if (workshop_registrants.includes(attendee_id)){
+              this.recordAttendance(attendee_id);
+            } else {
+              this.setState(
+                {
+                  current_scan_val: "", 
+                  current_message:"You aren't registered for this workshop.", 
+                  current_message_color:"red"
+                }
+              );
             }
-          });
+          }
         });
       }
     }
   }
 
+  /** 
+   * Handles all keypress events on the page when the page is locked. 
+   * A timeout is used to make it difficult/impossible for someone to enter an attendee id using the keyboard and not a barcode scanner or mag stripe reader.
+   * @param {object} e - The javascript keypress event object
+   * @public
+   */ 
   handleScan(e){
     if (e.key !== "Meta"){
       this.setState(prevState => {       
@@ -256,6 +335,11 @@ class App extends Component {
     }
   }
 
+  /** 
+   * Button handler that turns the tamper lock and causes a password prompt to appear to turn the lock off.
+   * @param {object} e - The javascript click event object
+   * @public
+   */ 
   handleLock(e){
     if (this.state.tamper_lock){
       this.setState({unlocking:true});
@@ -270,6 +354,11 @@ class App extends Component {
     }
   } 
 
+  /** 
+   * Handler that updates the state as a user enters the unlock password and checks the password if the enter key is pressed.
+   * @param {object} e - The javascript keypress event object
+   * @public
+   */
   handlePasswordKeyDown(e){
     if(e.key === 'Enter'){
       if (this.state.password === "ceetao"){
@@ -284,6 +373,11 @@ class App extends Component {
     }
   } 
 
+  /** 
+   * Handler for a button not currently included in the render method that toggles between checking attendees in and out.
+   * @param {object} e - The javascript click event object
+   * @public
+   */
   handleScanActionChange(e){
     this.setState(prevState => {
       prevState.check_in = !prevState.check_in;
@@ -291,6 +385,12 @@ class App extends Component {
     });
   }
 
+
+  /**
+  * A convenience function that returns an array of attendee objects for attendees that are already checked-in.
+  * @return {array} An array of objects of the form {id:number, name:string, attended:boolean}
+  * @public
+  */
   checkedIn(){
     if (this.state.selected_workshop_id == null) {
       return []
@@ -314,6 +414,11 @@ class App extends Component {
     }
   }
 
+  /**
+  * A convenience function that returns an array of attendee objects for attendees that are NOT already checked-in.
+  * @return {array} An array of objects of the form {id:number, name:string, attended:boolean}
+  * @public
+  */
   notCheckedIn(){
     if (this.state.selected_workshop_id == null) {
       return [];
@@ -338,6 +443,13 @@ class App extends Component {
     }
   }
 
+  /**
+  * A convenience function that returns an attendee object given a workshop if and an attendee id.
+  * @param {number} workshop_id - The workshop to look for the attendee in.
+  * @param {string} attendee_id - The attendee record to look for.
+  * @return {object} {id:number, name:string, attended:boolean}
+  * @public
+  */  
   findAttendee(workshop_id, attendee_id) {
     if (this.state.workshops.find(w => {return w.id == workshop_id}) === undefined){
       return undefined
@@ -346,13 +458,21 @@ class App extends Component {
     }
   }
 
-
+  /** 
+   * Updates the filter_input state variable when text is entered 
+   * @param {object} e - the javascript change event object
+   * @public
+  */
   filterChangeHandler(e){
     this.setState({
       filter_input: e.target.value,
     })
   }
 
+  /** 
+   * Compares the attendance state variable to the workshop state variable to determine if any attendance records need to be updated on the server and calls postAttend for each.
+   * @public
+  */
   sync() {
     this.state.workshops.forEach(w => {
       w.registrants.forEach((r) => {
@@ -364,6 +484,10 @@ class App extends Component {
     })
   }
 
+  /** 
+   * Generates and prompts the user to download a CSV file containing attendance information for every workshop.
+   * @public
+  */
   downloadCSV() { //https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
     let rows = [];
     let i = 0;
@@ -389,6 +513,10 @@ class App extends Component {
     window.open(encodedUri);
   }
 
+  /** 
+   * Stores the attendance state variable to browser localStorage and sets a flag indicating the cache has been changed.
+   * @public
+  */
   cache() {
     let cache_data = localStorage.getItem("check_out_cache");
     if (JSON.stringify(this.state.attendance) != cache_data) {
@@ -400,6 +528,10 @@ class App extends Component {
     }
   }
 
+  /** 
+   * The render lifecycle method.
+   * @public
+  */
   render() {
     if (this.state.unlocking){
       return (
@@ -527,6 +659,7 @@ class App extends Component {
                     <FontAwesomeIcon icon="id-badge" style={{color:"black"}}/>
                   </Button>*/
                 }
+
                 {locked ? null :
                   <Button href="tao/help" bsSize="large">
                     <FontAwesomeIcon icon="question-circle" style={{color:"black"}}/>
@@ -547,13 +680,17 @@ class App extends Component {
     }   
   }
 
+  /** 
+   * The componentDidMount lifecycle method. Used to set the value of the workshops and attendance state variables when the page first loads.
+   * @public
+  */
   componentDidMount(){
     let cache_data = JSON.parse(localStorage.getItem("check_out_cache"));
+    
     if (cache_data != null) {
-      this.setState({attendance:cache_data}, () => {this.loadWorkshops(this.updateAttendanceFromWorkshops)});
-    }
-    else {
-      this.loadWorkshops(this.updateAttendanceFromWorkshops)
+      this.setState({attendance:cache_data}, () => {this.loadWorkshops()});
+    } else {
+      this.loadWorkshops()
     }
   }
 }

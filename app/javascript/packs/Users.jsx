@@ -9,7 +9,7 @@ import { FormControl, Grid, Row, Col, Button } from 'react-bootstrap';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import {faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faArrowLeft} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import 'bootstrap/dist/css/bootstrap';
+import 'bootstrap/dist/css/bootstrap.css';
 
 library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faArrowLeft);
 
