@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import './App.css';
@@ -16,11 +17,6 @@ library.add( faArrowLeft);
  * Renders help page.
  */
 class Help extends Component {
-	constructor(props) {
-		super(props);
-		this.state = {};
-	}
-
 	render() {
 		return(
       <Grid>
@@ -55,7 +51,7 @@ class Help extends Component {
           </ul>
         </Row>
       </Grid>
-      );
+    );
 	}
 }
 

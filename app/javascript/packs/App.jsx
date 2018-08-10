@@ -19,7 +19,7 @@ library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faId
  */
 class App extends Component {
   static propTypes = {
-    /** Url Desc */
+    /** The URL of the server that the app will make AJAX calls to. */
     url: PropTypes.string,
   };
 

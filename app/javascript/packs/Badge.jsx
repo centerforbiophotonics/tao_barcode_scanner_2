@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 
@@ -13,15 +15,20 @@ library.add(faArrowLeft);
 
 const ALL_WORKSHOPS = 999;
 
-
 /**
  * @class Interface for generating badges
- * @property {string} URL - "A URL!"
  */
 class Badge extends Component {
   static propTypes = {
-    url: string
-  }
+    /** The URL of the server that the app will make AJAX calls to. */
+    url: PropTypes.string
+  };
+
+  static defaultProps = {
+    url: "http://localhost:3000/"
+  };
+
+
 	constructor(props) {
 		super(props);
 
@@ -109,7 +116,6 @@ class Badge extends Component {
    * Does an AJAX call to server to retrieve all workshop information, and then stores that information in the state.
    * @param {function} handler - callback function to invoke after AJAX is successful and the state has been updated
    * @public
-
    */
   loadWorkshops(handler){
     fetch(this.props.url + "tao/workshops", {credentials: 'include'})
