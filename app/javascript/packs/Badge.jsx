@@ -107,7 +107,9 @@ class Badge extends Component {
 
   /**
    * Does an AJAX call to server to retrieve all workshop information, and then stores that information in the state.
+   * @param {function} handler - callback function to invoke after AJAX is successful and the state has been updated
    * @public
+
    */
   loadWorkshops(handler){
     fetch(this.props.url + "tao/workshops", {credentials: 'include'})
