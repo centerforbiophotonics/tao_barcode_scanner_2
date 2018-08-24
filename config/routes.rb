@@ -1,14 +1,18 @@
 Rails.application.routes.draw do
-  root to: 'tao#app'
-  get 'tao/app'
-  get 'tao/workshops'
-  get 'tao/print'
-  get 'tao/help'
-  get 'users/user'
-  get 'users', to: 'users#user'
-  post 'users/add'
-  post 'users/update'
-  post 'users/delete'
-  post 'tao/generate_pdf'
-  post 'tao/attend'
+  resources :users, only: [:index, :create, :update, :destroy] do
+    collection do
+      get :search
+      post :set_event_server
+    end
+  end
+  
+  root to: 'events#home'
+
+  get 'events/home'
+  get 'events/scanner'
+  get 'events/workshops'
+  get 'events/print'
+  get 'events/help'
+  post 'events/generate_pdf'
+  post 'events/attend'
 end

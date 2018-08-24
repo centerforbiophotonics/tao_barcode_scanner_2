@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
 import './App.css';
 
 import Select from 'react-select';
@@ -8,19 +8,21 @@ import 'react-select/dist/react-select.css';
 import { FormControl, Grid, Row, Col, Button, Badge } from 'react-bootstrap';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
+import { faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle, faHome} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import 'bootstrap/dist/css/bootstrap.css'
 
-library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle)
+library.add( faLock, faLockOpen, faSignInAlt, faSignOutAlt, faWifi, faSave, faIdBadge, faQuestionCircle, faHome)
 
 /**
  * Interface for registering attendees in workshops using a scanning device or manually.
  */
-class App extends Component {
+class Scanner extends Component {
   static propTypes = {
     /** The URL of the server that the app will make AJAX calls to. */
     url: PropTypes.string,
+    /** @type {string} Name of the backend server */
+    server_name: PropTypes.string
   };
 
   static defaultProps = {
@@ -122,7 +124,7 @@ class App extends Component {
    */
   postAttend(workshop_id, attendee_id){
     let token = document.head.querySelector("[name=csrf-token]").content;
-    fetch(this.props.url + "tao/attend", {
+    fetch(this.props.url + "events/attend", {
         method: 'post',
         body: JSON.stringify({data: {workshop_id: workshop_id, attendee_id:attendee_id}}), 
         headers: {
@@ -174,7 +176,7 @@ class App extends Component {
    * @public
    */  
   loadWorkshops(handler){
-    fetch(this.props.url + "tao/workshops", {credentials: 'include'})
+    fetch(this.props.url + "events/workshops", {credentials: 'include'})
       .then(res => res.json())
       .then(
         (result) => {
@@ -531,7 +533,7 @@ class App extends Component {
   /** 
    * The render lifecycle method.
    * @public
-  */
+   */
   render() {
     if (this.state.unlocking){
       return (
@@ -560,7 +562,19 @@ class App extends Component {
       return (
         <Grid>
           <Row>
-            <Col md={8} mdOffset={2}>
+            <Col md={10} >
+              <Row style={{marginBottom:"5px"}}>
+                {!locked &&
+                  <Col md={1}>
+                    <Button bsSize="large" style={{color:"black"}} href={this.props.url}>
+                        <FontAwesomeIcon icon="home"/>
+                    </Button>
+                  </Col>
+                }
+                <Col md={6}>
+                  <h2>{this.props.server_name}</h2>
+                </Col>
+              </Row>
               <Row style={{marginBottom:"5px"}}>
                 <Col md={11}>
                   {locked  ? 
@@ -654,14 +668,14 @@ class App extends Component {
                     <FontAwesomeIcon icon="save" style={{color:"black"}}/>
                   }
                 </Button>
-                {
-                  /*<Button href="tao/print" bsSize="large" disabled={locked}>
+                { !locked &&
+                  <Button href="print" bsSize="large">
                     <FontAwesomeIcon icon="id-badge" style={{color:"black"}}/>
-                  </Button>*/
+                  </Button>
                 }
 
                 {locked ? null :
-                  <Button href="tao/help" bsSize="large">
+                  <Button href="help" bsSize="large">
                     <FontAwesomeIcon icon="question-circle" style={{color:"black"}}/>
                   </Button>
                 }
@@ -695,4 +709,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default Scanner;

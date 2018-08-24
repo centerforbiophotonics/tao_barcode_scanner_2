@@ -1,5 +1,5 @@
 {
-  "name": "tao_experimental",
+  "name": "event_attendance_scanner",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.0-11",
@@ -11,9 +11,12 @@
     "jsdoc": "^3.5.5",
     "prop-types": "^15.6.2",
     "react": "^16.4.1",
+    "react-autocomplete": "^1.8.1",
     "react-bootstrap": "^0.32.1",
+    "react-csv": "^1.0.14",
     "react-dom": "^16.4.1",
     "react-select": "^1.2.1",
+    "react-table": "^6.8.6",
     "webpacker-react": "^0.3.2"
   },
   "devDependencies": {

@@ -1,0 +1,30 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
+/**
+ * Bootstrap list group showing a collection of model instances. Initially shows the modele ID as a placeholder.
+ */
+class <%= class_name %>List extends React.Component {
+  static propTypes = {
+    /** The model instances to display */
+    <%= plural_table_name %>: PropTypes.object,
+  }
+
+  /** 
+   * The render lifecycle method. 
+   * @public
+   */
+  render(){
+    let <%= plural_table_name %> = this.props.<%= plural_table_name %>;
+
+    return (
+      <ul class="list-group">
+        {<%= plural_table_name %>.map(<%= singular_table_name %> =>
+          <li key={<%= singular_table_name %>.id} class="list-group-item p-0">{<%= singular_table_name %>.id}</li>
+        )} 
+      </ul>
+    )   
+  }
+}
+
+export default <%= class_name %>List;

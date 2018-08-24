@@ -7,13 +7,17 @@
 // To reference this file, add <%= javascript_pack_tag 'application' %> to the appropriate
 // layout file, like app/views/layouts/application.html.erb
 
-import WebpackerReact from 'webpacker-react'
-import App from './App'
-import Badge from './Badge'
-import Help from './Help'
-import Users from './Users'
 
-WebpackerReact.setup({App}) // ES6 shorthand for {Hello: Hello}
-WebpackerReact.setup({Badge})
-WebpackerReact.setup({Help})
-WebpackerReact.setup({Users})
+import Scanner from 'components/Scanner';
+import Badge from 'components/Badge';
+import Help from 'components/Help';
+import Home from 'components/Home';
+import Users from 'components/users/users';
+
+import WebpackerReact from 'webpacker-react';
+
+WebpackerReact.setup({Scanner});
+WebpackerReact.setup({Badge});
+WebpackerReact.setup({Help});
+WebpackerReact.setup({Home});
+WebpackerReact.setup({Users});;

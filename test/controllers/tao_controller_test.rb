@@ -1,18 +1,18 @@
 require 'test_helper'
 
-class TaoControllerTest < ActionDispatch::IntegrationTest
-  test "should get app" do
-    get tao_app_url
+class EventsControllerTest < ActionDispatch::IntegrationTest
+  test "should get scanner" do
+    get events_scanner_url
     assert_response :success
   end
 
   test "should get workshops" do
-    get tao_workshops_url
+    get events_workshops_url
     assert_response :success
   end
 
   test "should get attend" do
-    get tao_attend_url
+    get events_attend_url
     assert_response :success
   end
 

@@ -7,7 +7,7 @@ namespace :genbar do
     require 'chunky_png'
     require 'pdfkit'
 
-  	workshops = HTTParty.get("http://localhost:3001/tao/workshops", format: :plain)
+  	workshops = HTTParty.get("http://localhost:3000/events/workshops", format: :plain)
 
 	nameslist = []
 	barcodes = []
@@ -22,7 +22,7 @@ namespace :genbar do
 	end
 
 	set = nameslist.zip pngs
-    html = ApplicationController.render(file: Rails.root.join('app/views/tao/multi_badge_template.html.erb'), assigns: {set: set})
+    html = ApplicationController.render(file: Rails.root.join('app/views/events/multi_badge_template.html.erb'), assigns: {set: set})
     kit = PDFKit.new(html, :margin_top => 0, :margin_bottom => 0, :margin_left => 0, :margin_right => 0, dpi: 400)
 
     File.open("testpage.pdf", "wb+") {|f| f.write(kit.to_pdf) }

@@ -118,7 +118,7 @@ class Badge extends Component {
    * @public
    */
   loadWorkshops(handler){
-    fetch(this.props.url + "tao/workshops", {credentials: 'include'})
+    fetch(this.props.url + "events/workshops", {credentials: 'include'})
         .then(res => res.json())
         .then(
           (result) => {
@@ -160,7 +160,7 @@ class Badge extends Component {
    */
   generateBadge() {
       let token = document.head.querySelector("[name=csrf-token]").content;
-      fetch(this.props.url + "tao/generate_pdf", {
+      fetch(this.props.url + "events/generate_pdf", {
         method: 'post',
         body: JSON.stringify({attendee_id: this.state.selected_registrant.value, attendee_name: this.state.selected_registrant.label}), //send string ID instead of numerical ID for attendee_id
         headers: {
@@ -181,7 +181,7 @@ class Badge extends Component {
    */
   generateBulkBadges() {
       let token = document.head.querySelector("[name=csrf-token]").content;
-      fetch(this.props.url + "tao/generate_pdf", {
+      fetch(this.props.url + "events/generate_pdf", {
         method: 'post',
         body: JSON.stringify({workshop_id: this.state.selected_workshop.value, all: (this.state.selected_workshop.value == ALL_WORKSHOPS) ? true : false}),
         headers: {
@@ -264,10 +264,10 @@ class Badge extends Component {
         <Row>
           <Col md={10}>
           <div>
-            <span style={{float:'left'}}><h1>Generate TAO Badge</h1></span>
+            <span style={{float:'left'}}><h1>Generate Event Badge</h1></span>
             <span style={{float:'right'}}>
-            <Button href="/" bsSize="large">
-                 <FontAwesomeIcon icon="arrow-left" size="lg" style={{color:"black"}}/>
+            <Button href="/events/scanner" bsSize="large">
+              <FontAwesomeIcon icon="arrow-left" size="lg" style={{color:"black"}}/>
             </Button>
             </span>
           </div>
@@ -276,59 +276,54 @@ class Badge extends Component {
           <Row>
           <Col md={9}>
             <Select 
-                          className="attendees"
-                          placeholder="Select a workshop" 
-                          options={workshop_select_options}
-                          value={this.state.selected_workshop}
-                          onChange={this.handleWorkshopChange}
-                          onClick={() => {this.setState(prevState => {
-                                            prevState.allow_print_all = true;
-                                            prevState.workshop_has_been_selected = true;
-                                            return prevState;
-                                          });}}
-                          clearable = {false}
-                    />
+              className="attendees"
+              placeholder="Select a workshop" 
+              options={workshop_select_options}
+              value={this.state.selected_workshop}
+              onChange={this.handleWorkshopChange}
+              onClick={() => {
+                this.setState(prevState => {
+                  prevState.allow_print_all = true;
+                  prevState.workshop_has_been_selected = true;
+                  return prevState;
+                });
+              }}
+              clearable = {false}
+            />
           </Col>
-          {this.state.workshop_has_been_selected?
+          {this.state.workshop_has_been_selected &&
             <Col md={3}>
               <Button bsSize="large" bsStyle="primary" onClick={this.generateBulkBadges}>Generate All</Button>
             </Col>
-            :
-            null
-            }
+          }
         </Row>
         <br />
         <Row>
-        {this.state.allow_select_attendee ?
-          <Col md={9}>
-            <Select 
-                          className="workshops"
-                          placeholder="Select an attendee (optional)" 
-                          options={attendee_select_options}
-                          isSearchable={true}
-                          value={this.state.selected_registrant}
-                          onChange={this.handleSelectAttendee}
-                          onClick={() => {this.setState(prevState => {
-                                            prevState.allow_select_attendee = true;
-                                            return prevState;
-                                          });}}
-                          clearable = {false}
-                    />
-          </Col>
-        
-            :
-            null
-            }
-          {this.state.attendee_has_been_selected ?
+          {this.state.allow_select_attendee &&
+            <Col md={9}>
+              <Select 
+                className="workshops"
+                placeholder="Select an attendee (optional)" 
+                options={attendee_select_options}
+                isSearchable={true}
+                value={this.state.selected_registrant}
+                onChange={this.handleSelectAttendee}
+                onClick={() => {this.setState(prevState => {
+                                  prevState.allow_select_attendee = true;
+                                  return prevState;
+                                });}}
+                clearable = {false}
+              />
+            </Col>
+          }
+          {this.state.attendee_has_been_selected &&
             <Col md={3}>
               <Button bsSize="large" bsStyle="primary" onClick={this.generateBadge}>Generate Individual Badge</Button>
             </Col>
-            :
-            null
-            }    
+          }    
         </Row>
       </Grid>
-      );
+    );
 	}
 
   componentDidMount(){

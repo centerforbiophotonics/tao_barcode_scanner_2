@@ -21,14 +21,14 @@ class Help extends Component {
 		return(
       <Grid>
         <Row>
-         <Col md={12}>
-          <span style={{float:'left'}}>
-          <h1 style={{textAlign:"center"}}>TAO Workshop Help Page</h1>
-          </span>
-          <span style={{float:'right'}}>
-            <Button href="/" bsSize="large">
-                 <FontAwesomeIcon icon="arrow-left" size="lg" style={{color:"black"}}/>
-            </Button>
+          <Col md={12}>
+            <span style={{float:'left'}}>
+              <h1 style={{textAlign:"center"}}>Help Page</h1>
+            </span>
+            <span style={{float:'right'}}>
+              <Button href="/events/scanner" bsSize="large">
+                <FontAwesomeIcon icon="arrow-left" size="lg" style={{color:"black"}}/>
+              </Button>
             </span>
           </Col>
         </Row>

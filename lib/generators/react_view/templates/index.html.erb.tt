@@ -1,0 +1,1 @@
+<%%= react_component '<%= controller_class_name %>', { <%= plural_table_name %>: @<%= plural_table_name %>, current_user: current_user} %>

@@ -1,0 +1,31 @@
+Description:
+    This generator creates a set of three react components for the client-side half of the standard CRUD operations on a model. 
+    ENSURE THE FOLLOWING BEFORE RUNNING!
+      Requires React the react-table library, and bootstrap.
+      Assumes a current_user prop will be passed to the root component (for client-side authorization). You should probably make a current_user method on the application controller that is available as a helper method (or user Devise).
+      Assumes the model has already been generated.
+      Assumes the webpacker and webpacker-react install generators have already been run (so it can modify packs/application.js)
+        bundle exec rails webpacker:install
+        bundle exec rails webpacker:install:react
+        ./bin/yarn add webpacker-react
+      Before running the first time, packs/application.js should contain only
+        import WebpackerReact from 'webpacker-react';
+        import 'bootstrap/dist/css/bootstrap';
+      Assumes it will the same attribute arguments as the model generator.
+      You can delete the hello_react.jsx pack file that is created by second webpacker generator
+      You have added the following to app/views/layouts/application.html.erb
+        <%= javascript_pack_tag 'application' %>
+        <%= stylesheet_pack_tag 'application' %>
+
+Example:
+    rails generate react_view Model attribute_one:type attribute_two:type
+
+    This will create:
+        app/javascript/components/model_name_plural/model_name_plural.jsx
+        app/javascript/components/model_name_plural/model.jsx
+        app/javascript/components/model_name_plural/model_form.jsx
+        app/controllers/model_name_plural_controller.rb
+        app/views/model_name_plural/index.html.erb
+    
+    This will modify:
+        app/javascript/packs/application.js 

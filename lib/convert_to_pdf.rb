@@ -8,7 +8,7 @@ module ConvertToPdf
   def generate_registrants(id, name)
     barcode = Barby::Code128.new(id)
     png = Barby::PngOutputter.new(barcode).to_image.to_data_url
-    html = ApplicationController.render(file: Rails.root.join('app/views/tao/template.html.erb'), assigns: {path: Rails.root.join("lib") , name: name, png: png })
+    html = ApplicationController.render(file: Rails.root.join('app/views/events/template.html.erb'), assigns: {path: Rails.root.join("lib") , name: name, png: png })
     kit = PDFKit.new(html, :page_height => 76.2, :page_width => 101.6, :margin_top => 0, :margin_bottom => 0, :margin_left => 0, :margin_right => 0,
      dpi: 400)
 
@@ -16,7 +16,7 @@ module ConvertToPdf
   end
 
   def generate_bulk_registrants(workshop_id, all)
-    workshops = HTTParty.get("http://localhost:3001/tao/workshops", format: :plain)
+    workshops = HTTParty.get("http://localhost:3001/events/workshops", format: :plain)
     selected_workshop = {}
 
     JSON.parse(workshops).each do |w|
@@ -47,7 +47,7 @@ module ConvertToPdf
     end
 
     set = nameslist.zip pngs
-    html = ApplicationController.render(file: Rails.root.join('app/views/tao/multi_badge_template.html.erb'), assigns: {set: set})
+    html = ApplicationController.render(file: Rails.root.join('app/views/events/multi_badge_template.html.erb'), assigns: {set: set})
     kit = PDFKit.new(html, :margin_top => 0, :margin_bottom => 0, :margin_left => 0, :margin_right => 0, dpi: 400)
     kit.to_pdf
   end
