@@ -79,7 +79,12 @@ test:
 #     url: <%= ENV['DATABASE_URL'] %>
 #
 production:
-  <<: *default
-  database: event_attendance_scanner_production
-  username: event_attendance_scanner
-  password: <%= ENV['TAO_EXPERIMENTAL_DATABASE_PASSWORD'] %>
+  adapter: postgresql
+  encoding: utf8
+  pool:     20
+  database: <%= Rails.application.credentials.aws[:rds_db_name] %>
+  username: <%= Rails.application.credentials.aws[:rds_username] %>
+  password: <%= Rails.application.credentials.aws[:rds_password] %>
+  host: <%= Rails.application.credentials.aws[:rds_hostname] %>
+  port: <%= Rails.application.credentials.aws[:rds_port] %>
+
