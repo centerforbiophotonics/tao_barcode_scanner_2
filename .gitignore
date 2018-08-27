@@ -13,8 +13,16 @@
 
 # Ignore all logfiles and tempfiles.
 /log/*
+/tmp/*
 !/log/.keep
-/tmp
+!/tmp/.keep
+
+# Ignore uploaded files in development
+/storage/*
+!/storage/.keep
+
+/public/assets
+.byebug_history
 
 # Intellij Config
 /.idea/*
@@ -28,20 +36,20 @@
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
-
-/app/views/kys/HOW\ TO\ RESTART\ DATATRON.txt
-
-public/assets/
+/public/assets/
 /public/packs
 /public/packs-test
 /node_modules
 yarn-debug.log*
 .yarn-integrity
 
-yarn-error\.log
+/yarn-error.log
 
 # Ignore all ActiveStorage files from development setups
 /storage/*
 
 lib/template2.html
 lib/temp_qr78768768687.png
+
+# Ignore master key for decrypting credentials and more.
+/config/master.key
