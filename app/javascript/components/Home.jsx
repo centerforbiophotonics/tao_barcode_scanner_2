@@ -20,6 +20,10 @@ class Home extends Component {
     url: PropTypes.string
   };
 
+  static defaultProps = {
+    url: "http://localhost:3000/"
+  };
+
   constructor(props){
     super(props);
 
@@ -45,7 +49,7 @@ class Home extends Component {
           if (res.ok) {
             return res.json();
           } else {
-            throw new Error('something went wrong!')
+            throw new Error(res);
           }
         })
         .then(
@@ -53,7 +57,7 @@ class Home extends Component {
             window.location.href = this.props.url+"events/scanner";
           },
           (error) => {
-            throw new Error(error)
+            throw new Error(error);
           }
         )
   } 
