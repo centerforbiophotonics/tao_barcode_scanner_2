@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
   before_action :check_for_existing_user_else_redirect
 
   helper_method :current_user
+  helper_method :url
 
   def dev_cas_user
     unless User.where(:cas_user => "dev_user").exists?
@@ -31,5 +32,9 @@ class ApplicationController < ActionController::Base
       format.xml { head :not_found }
       format.any { head :not_found }
     end
+  end
+
+  def url
+    root_url(:protocol => (Rails.env == "production" ? 'https' : 'http'))
   end
 end
