@@ -326,7 +326,7 @@ class Scanner extends Component {
    * @public
    */ 
   handleScan(e){
-    if (e.key !== "Meta"){
+    if (e.key !== "Meta" && e.key !== 'Enter'){
       this.setState(prevState => {       
         prevState.current_scan_val = prevState.current_scan_val+e.key;
         
@@ -349,6 +349,9 @@ class Scanner extends Component {
     } else {
       if (this.state.selected_workshop_id !== null){
         this.setState({tamper_lock:true});
+        if (document.activeElement) {
+            document.activeElement.blur();
+        }
         document.addEventListener("keydown", this.handleScan, false);
       } else {
         alert("You must select a workshop.")
@@ -559,6 +562,7 @@ class Scanner extends Component {
       var storage = JSON.parse(localStorage.getItem('check_out_cache'));
       let locked = this.state.tamper_lock;
 
+
       return (
         <Grid>
           <Row>
@@ -661,13 +665,17 @@ class Scanner extends Component {
                   :
                   null
                 }
-                <Button bsSize="large"  onClick={this.downloadCSV} disabled={locked}>
-                  {this.state.cache_dirty && this.state.error !== null ? 
-                    <FontAwesomeIcon icon="save" style={{color:"red"}}/>
-                    : 
-                    <FontAwesomeIcon icon="save" style={{color:"black"}}/>
-                  }
-                </Button>
+
+                { !locked &&
+                  <Button bsSize="large"  onClick={this.downloadCSV} disabled={locked}>
+                    {this.state.cache_dirty && this.state.error !== null ? 
+                      <FontAwesomeIcon icon="save" style={{color:"red"}}/>
+                      : 
+                      <FontAwesomeIcon icon="save" style={{color:"black"}}/>
+                    }
+                  </Button>
+                }
+                
                 { !locked &&
                   <Button href="print" bsSize="large">
                     <FontAwesomeIcon icon="id-badge" style={{color:"black"}}/>
