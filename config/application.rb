@@ -12,8 +12,8 @@ module EventAttendanceScanner
     config.load_defaults 5.2
     config.autoload_paths += %W(#{config.root}/lib)
 
-    config.rubycas.cas_base_url = "https://ssodev.ucdavis.edu/cas/"
-    config.rubycas.cas_service_url = "https://localhost:3000/"
+    config.rubycas.cas_base_url = ENV['CAS_BASE_URL'] 
+    config.rubycas.cas_service_url = ENV['KYS_CAS_SERVICE_URL']
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers
