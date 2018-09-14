@@ -2,8 +2,8 @@ class User < ApplicationRecord
   
   def self.available_servers
     {
-      "TAO Dashboard" => "http://localhost:3001/tao/",
-      "DEMS" => "http://localhost:3001/tao/"
+      "TAO Dashboard" => "http://ocpwebtest.ocp.ucdavis.edu/rest/tao/attendance/"#"http://ocpweb.ucdavis.edu/rest/tao/attendance/"#
+      #{}"DEMS" => "http://localhost:3001/tao/"
     }
   end
 

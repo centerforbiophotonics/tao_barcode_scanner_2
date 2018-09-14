@@ -13,7 +13,7 @@ module EventAttendanceScanner
     config.autoload_paths += %W(#{config.root}/lib)
 
     config.rubycas.cas_base_url = ENV['CAS_BASE_URL'] 
-    config.rubycas.cas_service_url = ENV['KYS_CAS_SERVICE_URL']
+    config.rubycas.cas_service_url = ENV['CES_CAS_SERVICE_URL']
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers

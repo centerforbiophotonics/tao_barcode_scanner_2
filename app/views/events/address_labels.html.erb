@@ -1,0 +1,71 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>TAO Barcode Address Labels</title>
+  <meta name="description" content="Template">
+  <meta name="author" content="Matthew Steinwachs">
+
+  <style>
+    * {
+        box-sizing: border-box;
+    }
+
+    /* Create two equal columns that floats next to each other */
+    .column {
+      display: block;
+      white-space: wrap;
+      page-break-after: avoid;
+      page-break-before: avoid;
+      page-break-inside: avoid;
+      float: left;
+      width: 4in;
+      margin-left:0.25in;
+    }
+
+    .row {
+      height: 1.39in;
+      min-height: 1.39in;
+      text-align: center;
+    }
+
+    .page {
+      width: 8.5in;
+      height: 11.1in;
+      min-width: 8.5in;
+      min-height: 11in;
+      padding-top: 0.875in;
+      padding-bottom: 0.875in;
+    }
+
+    .barcode {
+      max-height: 1in;
+    }
+
+    p {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+  
+</head>
+
+<body>
+  <% @set.each_slice(14) do |page| %>
+    <div class="page">
+      <% page.each_slice(7) do |column| %>
+        <div class="column">
+          <% column.each do |name, png| %>
+            <div class="row">
+              <p><%= name %></p>
+              <img class="barcode" src="<%= png %>" />
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>  
+  <% end %>
+</body>
+</html>

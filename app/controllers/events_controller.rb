@@ -12,13 +12,20 @@ class EventsController < ApplicationController
   def workshops
   	#replace with actual server URL
 
-    workshops = HTTParty.get(current_user.current_server_url+"workshops", format: :plain)
-    render :json => workshops.body
+    if params[:id].present?
+      workshop = JSON.parse(HTTParty.get(current_user.current_server_url+"workshops/#{params[:id]}", format: :plain).body).first
+      p workshop
+      render :json => workshop
+    else
+      workshops = HTTParty.get(current_user.current_server_url+"workshops", format: :plain)
+      render :json => workshops.body
+    end
+    
   end
 
   def attend
   	#replace with actual server URL
-  	r = HTTParty.post(current_user.current_server_url+"attend", 
+  	r = HTTParty.post(current_user.current_server_url+"update", 
   		body: {:attendee_id => event_params[:attendee_id], :workshop_id => event_params[:workshop_id]})
 
   	unless (r.code == 200) 
@@ -33,7 +40,7 @@ class EventsController < ApplicationController
 
   def generate_pdf
     if (params[:workshop_id])
-  		send_data generate_bulk_registrants(params[:workshop_id], params[:all]), :disposition => "attachment"
+  		send_data generate_bulk_registrants(params[:workshop_id], params[:all], params[:event][:format]), :disposition => "attachment"
   	else
 	  	send_data generate_registrants(params[:attendee_id], params[:attendee_name]), :disposition => "attachment"
 	  end
@@ -42,7 +49,7 @@ class EventsController < ApplicationController
   private
 
   def event_params
-  	params.require(:data).permit(:workshop_id, :attendee_id)
+  	params.require(:event).permit(:workshop_id, :attendee_id, :format)
   end
 
 end

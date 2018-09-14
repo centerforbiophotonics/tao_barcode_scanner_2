@@ -39,6 +39,7 @@ class Scanner extends Component {
     this.handleWorkshopChange = this.handleWorkshopChange.bind(this);
     this.postAttend = this.postAttend.bind(this);
     this.loadWorkshops = this.loadWorkshops.bind(this);
+    this.loadWorkshop = this.loadWorkshop.bind(this);
     this.updateAttendanceFromWorkshops = this.updateAttendanceFromWorkshops.bind(this);
     this.recordAttendance = this.recordAttendance.bind(this);
     this.selectedWorkshop = this.selectedWorkshop.bind(this);
@@ -109,7 +110,8 @@ class Scanner extends Component {
   handleWorkshopChange(option){
     if (option !== null) {
       this.setState(prevState => {
-        prevState.selected_workshop_id = option.value;
+        let workshop_id = prevState.workshops.find(w => w.id == option.value).id
+        prevState.selected_workshop_id = workshop_id;
         prevState.current_message = "";
         return prevState;
       });
@@ -124,9 +126,10 @@ class Scanner extends Component {
    */
   postAttend(workshop_id, attendee_id){
     let token = document.head.querySelector("[name=csrf-token]").content;
+    let attendee = this.findAttendee(workshop_id, attendee_id)
     fetch(this.props.url + "events/attend", {
         method: 'post',
-        body: JSON.stringify({data: {workshop_id: workshop_id, attendee_id:attendee_id}}), 
+        body: JSON.stringify({event: {workshop_id: workshop_id, attendee_id:attendee.id}}), 
         headers: {
           'Content-Type' : 'application/json',
           'Accept': 'application/json',
@@ -144,14 +147,14 @@ class Scanner extends Component {
         .then(
           (result) => {
             this.setState(prevState => {
-              let current_r = prevState.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.id == attendee_id})
+              let current_r = prevState.workshops.find(w => {return w.id == workshop_id}).registrants.find(r => {return r.kerberos_id == attendee_id})
               
               prevState.current_scan_val = "";
               prevState.error = null;
               prevState.cache_dirty = false;
               current_r.attended = true;
               prevState.workshops.forEach(w => {w.registrants.forEach((r) => {
-                let attendance_record = prevState.attendance[w.id + "-" + r.id]
+                let attendance_record = prevState.attendance[w.id + "-" + r.kerberos_id]
                   if (r.attended == false && attendance_record.checked_in && attendance_record.checked_out) {
                     prevState.cache_dirty = true;
                   }
@@ -171,7 +174,7 @@ class Scanner extends Component {
   }
 
   /** 
-   * Makes an AJAX call to update the workshops in state. This is invoked once when the component mounts and whenever an attendee_id is scanned which is not found in the selected workshop in case the workshop registration has been updated since the page was loaded.
+   * Makes an AJAX call to update the workshops in state. This is invoked once when the component mounts.
    * @param {function} handler - (OPTIONAL) callback function to invoke after AJAX is successful and the state has been updated
    * @public
    */  
@@ -196,6 +199,31 @@ class Scanner extends Component {
       );
   }
 
+   /** 
+   * Makes an AJAX call to update a single workshop in state. This is invoked when an attendee_id is scanned which is not found in the selected workshop in case the workshop registration has been updated since the page was loaded.
+   * @param {function} handler - (OPTIONAL) callback function to invoke after AJAX is successful and the state has been updated
+   * @public
+   */  
+  loadWorkshop(workshop_id, handler){
+    fetch(this.props.url + "events/workshops?id="+workshop_id, {credentials: 'include'})
+        .then(res => res.json())
+        .then(
+          (result) => {
+            this.setState(prevState => {
+              let workshop = prevState.workshops.find(w => (w.id == workshop_id));
+              workshop = result;
+              prevState.error = null;
+            }, () => {handler(result)});
+          },
+          (error) => {
+            this.setState({
+              error:error
+            });
+          }
+        )
+
+  }
+
   /** 
    * Updates the attendance state variable after the workshops data has been updated so the two stay in sync. Is called by loadWorkshops after it finished updating the state.
    * @param {function} handler - (OPTIONAL) callback function to invoke after the state has been updated
@@ -206,7 +234,7 @@ class Scanner extends Component {
     if (workshops != null) {
       workshops.forEach(w => {
         w.registrants.forEach(r => {
-          let key = w.id + "-" + r.id;
+          let key = w.id + "-" + r.kerberos_id;
           if (key in this.state.attendance) {
             if (r.attended) {
               this.setState(prevState => {
@@ -291,30 +319,33 @@ class Scanner extends Component {
    */ 
   checkScan(){
     if (this.state.workshops != null) {
-      let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.id});
+      let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.kerberos_id});
       let attendee_id = this.state.current_scan_val;
       
       if (workshop_registrants.includes(attendee_id)){
         this.recordAttendance(attendee_id);
       } else {
         // Refresh workshop data in case attendee was just registered
-        this.loadWorkshops(() => {
-          if (this.state.workshops != null) {
-            let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.id});
+        this.loadWorkshop(
+          this.state.selected_workshop_id,
+          () => {
+            if (this.state.workshops != null) {
+              let workshop_registrants = this.selectedWorkshop().registrants.map((r) => { return r.kerberos_id});
 
-            if (workshop_registrants.includes(attendee_id)){
-              this.recordAttendance(attendee_id);
-            } else {
-              this.setState(
-                {
-                  current_scan_val: "", 
-                  current_message:"You aren't registered for this workshop.", 
-                  current_message_color:"red"
-                }
-              );
+              if (workshop_registrants.includes(attendee_id)){
+                this.recordAttendance(attendee_id);
+              } else {
+                this.setState(
+                  {
+                    current_scan_val: "", 
+                    current_message:"You aren't registered for this workshop.", 
+                    current_message_color:"red"
+                  }
+                );
+              }
             }
           }
-        });
+        );
       }
     }
   }
@@ -406,7 +437,9 @@ class Scanner extends Component {
         if (key.split("-")[0] == this.state.selected_workshop_id 
           && this.state.attendance[key].checked_out == true 
           && this.state.attendance[key].checked_in == true) {
-            registrants.push(this.findAttendee(key.split("-")[0], key.split("-")[1]));
+            let attendee = this.findAttendee(key.split("-")[0], key.split("-")[1]);
+            if (attendee != undefined)
+              registrants.push(attendee);
         }
       }
       return registrants.sort((a,b) => {
@@ -435,9 +468,12 @@ class Scanner extends Component {
         if (key.split("-")[0] == this.state.selected_workshop_id 
           && this.state.attendance[key].checked_out == false 
           && this.state.attendance[key].checked_in == true) {
-            registrants.push(this.findAttendee(key.split("-")[0], key.split("-")[1]));
+            let attendee = this.findAttendee(key.split("-")[0], key.split("-")[1]);
+            if (attendee != undefined)
+              registrants.push(attendee);
         }
       }
+
       return registrants.sort((a,b) => {
         if (a.name < b.name)
           return -1;
@@ -459,7 +495,7 @@ class Scanner extends Component {
     if (this.state.workshops.find(w => {return w.id == workshop_id}) === undefined){
       return undefined
     } else {
-      return this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find((r) => { return r.id == attendee_id});
+      return this.state.workshops.find(w => {return w.id == workshop_id}).registrants.find((r) => { return r.kerberos_id == attendee_id});
     }
   }
 
@@ -481,9 +517,10 @@ class Scanner extends Component {
   sync() {
     this.state.workshops.forEach(w => {
       w.registrants.forEach((r) => {
-        let attendance_record = this.state.attendance[w.id + "-" + r.id]
+        let key = w.id + "-" + r.kerberos_id
+        let attendance_record = this.state.attendance[key]
         if (r.attended == false && attendance_record.checked_in && attendance_record.checked_out) {
-          this.postAttend(w.id, r.id);
+          this.postAttend(w.id, r.kerberos_id);
         }
       })
     })
@@ -496,14 +533,15 @@ class Scanner extends Component {
   downloadCSV() { //https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
     let rows = [];
     let i = 0;
-    rows[i++] = ["Workshop Name", "Workshop ID", "Attendee ID", "Attended"];
+    rows[i++] = ["Workshop Name", "Workshop ID", "Attendee ID", "Attendee Kerberos ID", "Attended"];
     this.state.workshops.forEach(w => {
       w.registrants.forEach((r) => {
-        let attendance_record = this.state.attendance[w.id + "-" + r.id];
+        let attendance_record = this.state.attendance[w.id + "-" + r.kerberos_id];
         rows[i] = [];
         rows[i].push(w.name);
         rows[i].push(w.id);
         rows[i].push(r.id);
+        rows[i].push(r.kerberos_id);
         rows[i].push(attendance_record.checked_out);
         i++;
       })
@@ -645,7 +683,7 @@ class Scanner extends Component {
                         (r === "\n") ? r : 
                           <div key={r.id}> 
                             {r.name} 
-                            <a onClick={() => this.recordAttendance(r.id)}>
+                            <a onClick={() => this.recordAttendance(r.kerberos_id)}>
                               <Badge className={"badge-warning"} style={{cursor: 'pointer'}}>Manual Check-in</Badge>
                             </a>
                           </div>
@@ -696,7 +734,7 @@ class Scanner extends Component {
       return (
         <div>
           <h1> Loading... </h1>
-          <h2>(potential connection error, please refresh the page)</h2>
+          <h2> If this message does not go away after a few seconds try refreshing the page.  If the problem persists contact mksteinwachs@ucdavis.edu</h2>
         </div>
       );
     }   

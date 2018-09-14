@@ -32,7 +32,7 @@ class Badge extends Component {
 	constructor(props) {
 		super(props);
 
-
+    this.handleFormatChange = this.handleFormatChange.bind(this);
     this.handleWorkshopChange = this.handleWorkshopChange.bind(this);
     this.handleSelectAttendee = this.handleSelectAttendee.bind(this);
     this.loadWorkshops = this.loadWorkshops.bind(this);
@@ -41,23 +41,45 @@ class Badge extends Component {
     this.fetchAllAttendees = this.fetchAllAttendees.bind(this);
     this.download = this.download.bind(true);
 
+
+    this.format_options = [
+      {label: "Address Labels", "value": "address_labels"},
+      {label: "Name Badge Stickers", "value": "sticker_name_badges"}
+    ];
+
 		this.state = {
 			workshops: [], //array of workshop objects
       attendee_list: [], //array of attendee objects
       selected_workshop_attendee_list: [], //array of all registrants that are registered for the currently selected workshop
       attendee_select_options: null, //array of {label: string, value: string} objects passed to react-select components
-      selected_workshop: {}, //currently selected workshop object
+      selected_format: this.format_options[0].value, //string matching value from format_options to tell the server the format of badge to generate
+      selected_workshop: {
+          label: "All",
+          value: ALL_WORKSHOPS
+        }, //currently selected workshop object
       selected_registrant: null, //currently selected registrant 
       allow_print_all: false, //potentially unusued?
       attendee_has_been_selected: false, //flag to check if user has selected an attendee
-      workshop_has_been_selected: false, //flag to check if user has selected a workshop
-      data_loaded: null //flag to track if the AJAX request to fetch workshop data has been performed
+      workshop_has_been_selected: true, //flag to check if user has selected a workshop
+      data_loaded: null, //flag to track if the AJAX request to fetch workshop data has been performed
+      waiting_for_download: false
 		};
+
+    
 
 	}
 
   /** 
-   * Updates selected attendee
+   * Updates selected format
+   * @param {object} e - {label: string, value: number}
+   * @public
+   */
+  handleFormatChange(e){
+    this.setState({selected_format:  e.value});
+  }
+
+  /** 
+   * Updates selected workshop
    * @param {object} e - {label: string, value: number}
    * @public
    */
@@ -68,21 +90,11 @@ class Badge extends Component {
       this.setState(prevState => {
         prevState.selected_workshop.label = e.label;
         prevState.selected_workshop.value = e.value;
-        return prevState;
-      });
-      this.setState(prevState => {
         prevState.allow_select_attendee = true;
         prevState.workshop_has_been_selected = true;
+        prevState.selected_workshop_attendee_list = w.registrants
         return prevState;
       });
-      this.setState({
-          selected_workshop_attendee_list: []
-          });
-      w.registrants.forEach(function(r) {
-        this.setState(prevState => {prevState.selected_workshop_attendee_list.push(r);
-                                    return prevState;
-          });
-        }, this);
     }
     else if (e !== null && e.value == ALL_WORKSHOPS)  {
         this.setState(prevState => {
@@ -136,6 +148,7 @@ class Badge extends Component {
         )
   }
 
+
   /**
    * Fetches all attendees from all workshops
    * @public
@@ -180,10 +193,16 @@ class Badge extends Component {
    * @public
    */
   generateBulkBadges() {
+      this.setState({waiting_for_download: true});
+
       let token = document.head.querySelector("[name=csrf-token]").content;
       fetch(this.props.url + "events/generate_pdf", {
         method: 'post',
-        body: JSON.stringify({workshop_id: this.state.selected_workshop.value, all: (this.state.selected_workshop.value == ALL_WORKSHOPS) ? true : false}),
+        body: JSON.stringify({
+          workshop_id: this.state.selected_workshop.value, 
+          all: (this.state.selected_workshop.value == ALL_WORKSHOPS) ? true : false,
+          format: this.state.selected_format  
+        }),
         headers: {
           'Content-Type' : 'application/json',
           'Accept': 'application/json',
@@ -193,7 +212,11 @@ class Badge extends Component {
         credentials: 'same-origin'
       })
       .then(response => response.blob())
-      .then(response => this.download(response, this.state.selected_workshop.label))
+      .then(response => {
+        this.setState({waiting_for_download: false});
+        this.download(response, this.state.selected_workshop.label)
+
+      })
   }
 
 
@@ -263,20 +286,20 @@ class Badge extends Component {
       <Grid>
         <Row>
           <Col md={10}>
-          <div>
-            <span style={{float:'left'}}><h1>Generate Event Badge</h1></span>
-            <span style={{float:'right'}}>
-            <Button href="/events/scanner" bsSize="large">
-              <FontAwesomeIcon icon="arrow-left" size="lg" style={{color:"black"}}/>
-            </Button>
-            </span>
-          </div>
+            <div>
+              <span style={{float:'left'}}><h1>Generate Event Badge</h1></span>
+              <span style={{float:'right'}}>
+                <Button href="/events/scanner" bsSize="large">
+                  <FontAwesomeIcon icon="arrow-left" size="lg" style={{color:"black"}}/>
+                </Button>
+              </span>
+            </div>
           </Col>
         </Row>
-          <Row>
-          <Col md={9}>
+        <Row>
+          <Col md={5}>
             <Select 
-              className="attendees"
+              className="workshop_select"
               placeholder="Select a workshop" 
               options={workshop_select_options}
               value={this.state.selected_workshop}
@@ -291,9 +314,19 @@ class Badge extends Component {
               clearable = {false}
             />
           </Col>
+          <Col md={4}>
+            <Select 
+              className="format_select"
+              placeholder="Select a format" 
+              options={this.format_options}
+              value={this.state.selected_format}
+              onChange={this.handleFormatChange}
+              clearable = {false}
+            />
+          </Col>
           {this.state.workshop_has_been_selected &&
             <Col md={3}>
-              <Button bsSize="large" bsStyle="primary" onClick={this.generateBulkBadges}>Generate All</Button>
+              <Button bsStyle="primary" onClick={this.generateBulkBadges} disabled={this.state.waiting_for_download}>Generate All</Button>
             </Col>
           }
         </Row>
@@ -302,23 +335,18 @@ class Badge extends Component {
           {this.state.allow_select_attendee &&
             <Col md={9}>
               <Select 
-                className="workshops"
-                placeholder="Select an attendee (optional)" 
+                className="attendee_select"
+                placeholder="Select an attendee to generate a single badge." 
                 options={attendee_select_options}
                 isSearchable={true}
                 value={this.state.selected_registrant}
                 onChange={this.handleSelectAttendee}
-                onClick={() => {this.setState(prevState => {
-                                  prevState.allow_select_attendee = true;
-                                  return prevState;
-                                });}}
-                clearable = {false}
               />
             </Col>
           }
           {this.state.attendee_has_been_selected &&
             <Col md={3}>
-              <Button bsSize="large" bsStyle="primary" onClick={this.generateBadge}>Generate Individual Badge</Button>
+              <Button bsStyle="primary" onClick={this.generateBadge}>Generate Individual Badge</Button>
             </Col>
           }    
         </Row>
