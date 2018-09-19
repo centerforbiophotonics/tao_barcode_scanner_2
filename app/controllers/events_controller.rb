@@ -10,23 +10,36 @@ class EventsController < ApplicationController
   end
 
   def workshops
-  	#replace with actual server URL
-
     if params[:id].present?
-      workshop = JSON.parse(HTTParty.get(current_user.current_server_url+"workshops/#{params[:id]}", format: :plain).body).first
-      p workshop
+      workshop = JSON.parse(
+        HTTParty.get(
+          current_user.current_server_url+"workshops/#{params[:id]}", 
+          format: :plain, 
+          headers: {origin: "https://ceescan.ucdavis.edu/"}
+        ).body
+      ).first
+
       render :json => workshop
     else
-      workshops = HTTParty.get(current_user.current_server_url+"workshops", format: :plain)
+      workshops = HTTParty.get(
+        current_user.current_server_url+"workshops", 
+        format: :plain, 
+        headers: {origin: "https://ceescan.ucdavis.edu/"} 
+      )
+
       render :json => workshops.body
     end
     
   end
 
   def attend
-  	#replace with actual server URL
-  	r = HTTParty.post(current_user.current_server_url+"update", 
-  		body: {:attendee_id => event_params[:attendee_id], :workshop_id => event_params[:workshop_id]})
+  	r = HTTParty.post(
+      current_user.current_server_url+"update", 
+  		body: {
+        attendee_id: event_params[:attendee_id], 
+        workshop_id: event_params[:workshop_id]},
+      headers: {origin: "https://ceescan.ucdavis.edu/"}
+    )
 
   	unless (r.code == 200) 
   		render :json => {status: "failure"}, :status => r.code
