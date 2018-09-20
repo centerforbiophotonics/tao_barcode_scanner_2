@@ -6,6 +6,10 @@
   z-index: 99; 
 }
 
+.row.manual_checkin:hover{
+  background-color: lightgrey;
+}
+
 /*  react autosuggest component css */
 .react-autosuggest__container {
   position: relative;

@@ -680,13 +680,14 @@ class Scanner extends Component {
                           f_string === '' || lc_name.includes(f_string)
                         )
                       }).map((r) =>
-                        (r === "\n") ? r : 
-                          <div key={r.id}> 
-                            {r.name} 
+                        <div key={r.id} className="row manual_checkin"> 
+                          <div className="col-md-4">{r.name}</div> 
+                          <div className="col-md-2">
                             <a onClick={() => this.recordAttendance(r.kerberos_id)}>
                               <Badge className={"badge-warning"} style={{cursor: 'pointer'}}>Manual Check-in</Badge>
                             </a>
                           </div>
+                        </div>
                       )}
                     </div>
                   </div>
