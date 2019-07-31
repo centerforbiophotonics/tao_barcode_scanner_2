@@ -5,22 +5,22 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.0-11",
     "@fortawesome/free-solid-svg-icons": "^5.1.0-11",
     "@fortawesome/react-fontawesome": "^0.1.0-11",
-    "@rails/webpacker": "3.5",
+    "@rails/webpacker": "4.0.7",
     "babel-preset-react": "^6.24.1",
     "bootstrap": ">=4.1.2",
     "jsdoc": "^3.5.5",
     "prop-types": "^15.6.2",
     "react": "^16.4.1",
     "react-autocomplete": "^1.8.1",
-    "react-bootstrap": "^0.32.1",
+    "react-bootstrap": "^1.0.0-beta.10",
     "react-csv": "^1.0.14",
     "react-dom": "^16.4.1",
-    "react-select": "^1.2.1",
+    "react-select": "^3.0.4",
     "react-table": "^6.8.6",
     "webpacker-react": "^0.3.2"
   },
   "devDependencies": {
-    "react-styleguidist": "^7.2.1",
-    "webpack-dev-server": "2.11.2"
+    "react-styleguidist": "^9.1.13",
+    "webpack-dev-server": "3.7.2"
   }
 }
