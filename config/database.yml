@@ -19,11 +19,14 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # http://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  pool: 5 #<%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
 development:
   <<: *default
   database: event_attendance_scanner_development
+  username: postgres
+  host: localhost
+  password:
 
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
@@ -87,4 +90,3 @@ production:
   password: <%= Rails.application.credentials.aws[:rds_password] %>
   host: <%= Rails.application.credentials.aws[:rds_hostname] %>
   port: <%= Rails.application.credentials.aws[:rds_port] %>
-

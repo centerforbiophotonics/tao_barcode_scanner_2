@@ -1,8 +1,8 @@
 class User < ApplicationRecord
-  
+
   def self.available_servers
     servers = {
-      "TAO Dashboard" => (Rails.env.development? ? "http://ocpwebtest.ocp.ucdavis.edu/rest/tao/attendance/" : "https://ocpweb.ucdavis.edu/rest/tao/attendance/")
+      "TAO Dashboard" => (Rails.env.development? ? "http://ocpwebtest.ocp.ucdavis.edu/rest/tao-1/attendance/" : "https://ocpweb.ucdavis.edu/rest/tao-1/attendance/")
     }
 
     if Rails.env.development?
