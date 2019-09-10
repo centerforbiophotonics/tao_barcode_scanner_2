@@ -6,7 +6,7 @@ class User < ApplicationRecord
     }
 
     if Rails.env.development?
-      servers["Development Server"] = "http://localhost:3001/"
+      servers["Development Server"] = "http://localhost:3001/tao/"
     end
 
     servers
