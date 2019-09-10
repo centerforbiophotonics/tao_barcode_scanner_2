@@ -41,10 +41,8 @@ class EventsController < ApplicationController
       headers: {origin: "https://ceescan.ucdavis.edu/"}
     )
 
-    pp r
-    
   	unless (r.code == 200)
-  		render :json => {status: "failure"}, :status => r.code
+  	  render :json => {status: "failure"}, :status => r.code
   	else
     	render :json => {status: "success"}
     end
